@@ -1,4 +1,4 @@
-Arduino
+Arduino (IDE for AVR Virtual Lab)
 ========
 
 * Arduino is an open-source physical computing platform based on a simple I/O
