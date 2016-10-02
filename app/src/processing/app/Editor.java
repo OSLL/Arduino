@@ -30,6 +30,11 @@ import cc.arduino.view.GoToLineNumber;
 import cc.arduino.view.StubMenuListener;
 import cc.arduino.view.findreplace.FindReplace;
 import com.jcraft.jsch.JSchException;
+
+import gdbremoteserver.DebugServerCommunicator;
+import gdbremoteserver.GdbBreakpointHandler;
+import gdbremoteserver.LineBreakpoint;
+import gdbremoteserver.RegistrationFrame;
 import jssc.SerialPortException;
 import processing.app.debug.RunnerException;
 import processing.app.forms.PasswordAuthorizationDialog;
@@ -47,6 +52,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+
+import org.fife.ui.rtextarea.GutterIconInfo;
+
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -63,6 +71,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -198,6 +207,28 @@ public class Editor extends JFrame implements RunnerListener {
   private Runnable exportAppHandler;
   private Runnable timeoutUploadHandler;
 
+  //pro100kot--------------------
+  Runnable runDebugHandler = new DebugHandler();
+  Runnable presentDebugHandler = new DebugHandler(true);
+  private Runnable runAndSaveDebugHandler = new DebugHandler(false, true);
+  private Runnable presentAndSaveDebugHandler = new DebugHandler(true, true);
+  GdbDebugProcess debugProcess;
+  private GdbBreakpointHandler breakpointHandler;
+
+  private TracingHandler tracingHandler;
+  
+  private HashMap<LineBreakpoint, GutterIconInfo> userBreakpoints;
+  
+  DebugToolbar debugToolbar;
+  
+  private ImageIcon breakpointIco;
+  
+  VarTableFrame varFrame;
+  private int avaricePort;
+  RegistrationFrame registrationFrame;
+  String debugKey = null;
+  //--------------------
+  
   public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation, Platform platform) throws Exception {
     super("Arduino");
     this.base = ibase;
@@ -267,6 +298,16 @@ public class Editor extends JFrame implements RunnerListener {
     }
     toolbar = new EditorToolbar(this, toolbarMenu);
     upper.add(toolbar);
+    
+    //pro100kot--------------------
+    debugToolbar = new DebugToolbar(this);
+    upper.add(debugToolbar);
+    userBreakpoints = new HashMap<LineBreakpoint, GutterIconInfo>();	
+    tracingHandler = new TracingHandler(this);
+    varFrame = new VarTableFrame();
+    registrationFrame = new RegistrationFrame(this);
+    breakpointIco = new ImageIcon(Theme.getThemeImage("breakpoint", this, 15, 15));
+    //--------------------   
 
     header = new EditorHeader(this);
     upper.add(header);
@@ -341,7 +382,42 @@ public class Editor extends JFrame implements RunnerListener {
     if (!loaded) sketchController = null;
   }
 
+//pro100kot--------------------
+  
+  public void setDebugKey(String debugKey) {
+	this.debugKey = debugKey;
+}
 
+  public TracingHandler getTracingHandler(){
+	  return tracingHandler;
+  }
+  
+  void startDebugSession(String elfFilePath){
+	  tracingHandler.deselectAllLines();
+	  //bad solution
+	  debugProcess = new GdbDebugProcess(this, PreferencesData.get("debug.server.address", "localhost"), avaricePort, elfFilePath);
+	  //
+	  breakpointHandler = debugProcess.getBreakpointHandler();
+	  
+	  debugProcess.goToStartPosition(sketchController.getSketch().getName()+".ino");
+	  Iterator<Entry<LineBreakpoint, GutterIconInfo>> it = userBreakpoints.entrySet().iterator();
+	  while(it.hasNext()){
+		  breakpointHandler.registerBreakpoint(it.next().getKey());
+	  }
+	  debugProcess.resume();
+	  varFrame.setVisible(true);
+  }
+  
+  void StopDebugSession(){
+	  	tracingHandler.deselectAllLines();
+		//bad solution
+	  	debugProcess.stop();
+		debugProcess = null;
+		//
+		varFrame.clear();
+  }
+  //--------------------
+  
   /**
    * Handles files dragged & dropped from the desktop and into the editor
    * window. Dragging files into the editor window is the same as using
@@ -1563,6 +1639,28 @@ public class Editor extends JFrame implements RunnerListener {
   }
 
 
+  //pro100kot--------------------
+  void handleSetUnsetBreakpoint(){
+	  LineBreakpoint key = new LineBreakpoint(getCurrentTab().file.getFile().getAbsolutePath(), getCurrentTab().textarea.getCaretLineNumber());
+	  GutterIconInfo ico = userBreakpoints.get(key);
+	  if(ico == null){ //no breakpoints in this line of file
+		  try {
+			  if(debugProcess != null)
+				  breakpointHandler.registerBreakpoint(key);
+			  ico = getCurrentTab().scrollPane.getGutter().addLineTrackingIcon(getCurrentTab().textarea.getCaretLineNumber(), breakpointIco);
+			  userBreakpoints.put(key, ico);
+			} catch (BadLocationException e) {
+			}
+	  }
+	  else{ //remove breakpoint
+		  if(debugProcess != null)
+			  breakpointHandler.unregisterBreakpoint(key, false);
+		  getCurrentTab().scrollPane.getGutter().removeTrackingIcon(ico);
+		   userBreakpoints.remove(key);
+	  }  
+  }
+  //-------------------- 
+  
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 
@@ -1757,6 +1855,101 @@ public class Editor extends JFrame implements RunnerListener {
     new Thread(verbose ? verboseHandler : nonVerboseHandler).start();
   }
 
+  //pro100kot--------------------
+  public void handleDebug(final boolean verbose, Runnable verboseHandler, Runnable nonVerboseHandler) {
+	    handleDebug(verbose, new ShouldSaveIfModified(), verboseHandler, nonVerboseHandler);
+	  }
+
+  private void handleDebug(final boolean verbose, Predicate<SketchController> shouldSavePredicate, Runnable verboseHandler, Runnable nonVerboseHandler) {
+	    if (shouldSavePredicate.test(sketchController)) {
+	        handleSave(true);
+	      }
+	    toolbar.activateRun();
+	    status.progress("Compiling sketch...");
+
+	    // do this to advance/clear the terminal window / dos prompt / etc
+	    for (int i = 0; i < 10; i++) System.out.println();
+
+	    // clear the console on each run, unless the user doesn't want to
+	    if (PreferencesData.getBoolean("console.auto_clear")) {
+	      console.clear();
+	    }
+
+	    // Cannot use invokeLater() here, otherwise it gets
+	    // placed on the event thread and causes a hang--bad idea all around.
+	    new Thread(verbose ? verboseHandler : nonVerboseHandler).start();
+	  }
+	  
+	  class DebugHandler implements Runnable {
+		private final boolean verbose;
+		private final boolean saveHex;
+		
+		public DebugHandler() {
+			this(false);
+		}
+		
+		public DebugHandler(boolean verbose){
+			this(verbose, false);
+		}
+		
+		public DebugHandler(boolean verbose, boolean saveHex){
+			this.verbose = verbose;
+			this.saveHex = saveHex;
+		}
+		  
+		@Override
+		public void run() {
+			try {
+				System.out.println("Starting to compiling your sketch\n");
+				removeAllLineHighlights();
+				sketchController.build(verbose, saveHex);
+				statusNotice(tr("Done compiling."));
+			} catch (PreferencesMapException e) {
+				statusError(I18n
+						.format(tr("Error while compiling: missing '{0}' configuration parameter"),
+								e.getMessage()));
+			} catch (Exception e) {
+				status.unprogress();
+				statusError(e);
+			}
+
+			status.unprogress();
+			toolbar.deactivateRun();
+
+			for (int i = 0; i < 5; i++)
+				System.out.println("\n");
+			System.out
+					.println("Starting to download sketch to remote target\n");
+			DebugServerCommunicator communicator = new DebugServerCommunicator(
+					PreferencesData.get("debug.server.address", "localhost"),
+					PreferencesData.getInteger("debug.server.port", 3129));
+			String hexPath = "";
+			String elfPath = "";
+			try {
+				hexPath = sketchController.getSketch().getBuildPath().getAbsolutePath()
+						+ "/" + sketch.getName() + ".ino.hex";
+				elfPath = sketchController.getSketch().getBuildPath().getAbsolutePath()
+						+ "/" + sketch.getName() + ".ino.elf";
+			} catch (IOException e) {
+
+			}
+			System.out.println(" hexPath " + hexPath);
+			File hexFile = new File(hexPath);
+			System.out.println(" hexFile.exist() " + hexFile.exists());
+			System.out.println(" hexFile.length() " + hexFile.length());
+			int res = communicator.loadAndRun(new File(hexPath), debugKey);
+			if (res > 0) {
+				System.out.println("Download OK\n");
+				avaricePort = res;
+				startDebugSession(elfPath);
+			} else {
+				System.out.println("Download Error: \n");
+				return;
+			}
+		}
+	}
+	  //--------------------  
+  
   class BuildHandler implements Runnable {
 
     private final boolean verbose;

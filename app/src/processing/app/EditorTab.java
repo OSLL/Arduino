@@ -26,6 +26,8 @@ package processing.app;
 import static processing.app.I18n.tr;
 import static processing.app.Theme.scale;
 
+import gdbremoteserver.LineBreakpoint;
+
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -34,6 +36,7 @@ import java.io.IOException;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -51,6 +54,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaEditorKit;
 import org.fife.ui.rsyntaxtextarea.RSyntaxUtilities;
 import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.GutterIconInfo;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.RUndoManager;
 
@@ -73,6 +77,9 @@ public class EditorTab extends JPanel implements SketchFile.TextStorage {
   protected boolean modified;
   /** Is external editing mode currently enabled? */
   protected boolean external;
+  //pro100kot
+  private ImageIcon breakpointIco;
+  //
   
   /**
    * Create a new EditorTab
@@ -136,7 +143,10 @@ public class EditorTab extends JPanel implements SketchFile.TextStorage {
     scrollPane.setIconRowHeaderEnabled(false);
 
     Gutter gutter = scrollPane.getGutter();
-    gutter.setBookmarkingEnabled(false);
+    gutter.setBookmarkingEnabled(true);
+    //pro100kot
+    breakpointIco = new ImageIcon(Theme.getThemeImage("breakpoint", this, 15, 15));
+    //
     //gutter.setBookmarkIcon(CompletionsRenderer.getIcon(CompletionType.TEMPLATE));
     gutter.setIconRowHeaderInheritsGutterBackground(true);
 
@@ -525,7 +535,7 @@ public class EditorTab extends JPanel implements SketchFile.TextStorage {
     action.actionPerformed(null);
 
   }
-
+  
   void handleDiscourseCopy() {
     new DiscourseFormat(editor, this, false).show();
   }
