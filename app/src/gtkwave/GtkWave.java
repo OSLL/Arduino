@@ -1,8 +1,6 @@
 package gtkwave;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class GtkWave extends Thread {
@@ -66,8 +64,6 @@ public class GtkWave extends Thread {
 
     }
 
-
-
     public boolean isFinished() {
         return isFinished;
     }
@@ -76,13 +72,18 @@ public class GtkWave extends Thread {
         return isFailed;
     }
 
+    public boolean isRunning(){
+    	return isFinished || isFailed;
+    }
+    
     public int exitValue() {
         return exitValue;
     }
-
+    
     private ArrayList<String> collectOptions() {
         ArrayList<String> options = new ArrayList<String>();
         options.add(gtkPath);
+        options.add("-f");
         options.add(dumpFile);
 
         return options;

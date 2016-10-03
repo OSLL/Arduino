@@ -1,6 +1,8 @@
 
 package processing.app;
 
+import gtkwave.GtkWave;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -13,7 +15,7 @@ public class DebugToolbar extends JPanel {
 	/** Titles for each button when the shift key is pressed. */ 
 	static final String titleShift[] = {
 		tr("Start debug"), tr("Continue"), tr("Stop"), tr("Step Into"), tr("Step Over"),
-		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration") 
+		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration"), tr("Open GTKWave") 
 	};	
 	static final int DEBUG     = 0;
 	static final int CONTINUE  = 1;
@@ -24,6 +26,7 @@ public class DebugToolbar extends JPanel {
 	static final int SET_UNSET_BRPT  = 6;
 	static final int VAR_LIST  = 7;
 	static final int REGISTR  = 8;
+	static final int GTKWAVE  = 9;
 	private JButton debugButton;
 	private JButton continueButton;
 	private JButton stopButton;
@@ -33,6 +36,9 @@ public class DebugToolbar extends JPanel {
 	private JButton breakpointButton;
 	private JButton varListButton;
 	private JButton registrationButton;
+	private JButton GtkWaveButton;
+	
+	GtkWave gtk;
 		
 	public DebugToolbar(Editor _editor) {
 		editor = _editor;
@@ -121,6 +127,15 @@ public class DebugToolbar extends JPanel {
 					editor.registrationFrame.setVisible(true);
 			}
 		});
+		GtkWaveButton = new JButton(tr("GTKWave"));
+		GtkWaveButton.setToolTipText(titleShift[GTKWAVE]);
+		GtkWaveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				gtk = new GtkWave(editor.sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "outvcd");
+				gtk.start();
+			}
+		});
 		add(debugButton);
 		add(continueButton);
 		add(stopButton);
@@ -131,6 +146,7 @@ public class DebugToolbar extends JPanel {
 		add(varListButton);
 		add(Box.createHorizontalGlue());
 		add(registrationButton);
+		add(GtkWaveButton);
 	}
 	
 	public void targetIsRunning(){
