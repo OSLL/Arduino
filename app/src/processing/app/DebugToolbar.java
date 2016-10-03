@@ -132,7 +132,8 @@ public class DebugToolbar extends JPanel {
 		GtkWaveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				gtk = new GtkWave(editor.sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "outvcd");
+				//gtk = new GtkWave(editor.sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "outvcd");
+				gtk = new GtkWave(null);
 				gtk.start();
 			}
 		});

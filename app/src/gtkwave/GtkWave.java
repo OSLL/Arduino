@@ -9,8 +9,8 @@ public class GtkWave extends Thread {
 
     private String dumpFile;
 
-    private boolean isFinished;
-    private boolean isFailed;
+    private boolean isFinished = false;
+    private boolean isFailed = false;
 
     private int exitValue;
 
@@ -83,9 +83,10 @@ public class GtkWave extends Thread {
     private ArrayList<String> collectOptions() {
         ArrayList<String> options = new ArrayList<String>();
         options.add(gtkPath);
-        options.add("-f");
-        options.add(dumpFile);
-
+        if(dumpFile != null){
+        	options.add("-f");
+            options.add(dumpFile);
+        }
         return options;
     }
 
