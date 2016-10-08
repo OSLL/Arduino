@@ -213,8 +213,8 @@ public class SimulAVRConfigFrame extends JFrame {
     enableVCDTrace.setSelected(flag);
   }
 
-  public void setVCDConfig(String name, boolean flag) {
-    vcdConfigFrame.setElement(name, flag);
+  public void putVCDConfig(String name, boolean flag) {
+    vcdConfigFrame.putElement(name, flag);
   }
 
   public boolean getVCDConfig(String name) {

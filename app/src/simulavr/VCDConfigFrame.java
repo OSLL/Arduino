@@ -18,7 +18,7 @@ class VCDConfigFrame extends JFrame {
     configMap = new HashMap<>();
   }
 
-  void setElement(String name, boolean flag) {
+  void putElement(String name, boolean flag) {
     if (configMap.containsKey(name)) {
       configMap.get(name).setFlag(flag);
     }
