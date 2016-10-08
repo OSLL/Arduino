@@ -1,7 +1,5 @@
 package simulavr;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
@@ -80,7 +78,7 @@ public class SimulAVRConfigFrame extends JFrame {
         super.windowClosing(e);
       }
     });
-    setVisible(true);
+    //setVisible(true);
   }
 
   private void makeGUI() {

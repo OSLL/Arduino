@@ -45,6 +45,7 @@ import processing.app.legacy.PApplet;
 import processing.app.syntax.PdeKeywords;
 import processing.app.tools.MenuScroller;
 import processing.app.tools.Tool;
+import simulavr.SimulAVRConfigFrame;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -224,9 +225,11 @@ public class Editor extends JFrame implements RunnerListener {
   private ImageIcon breakpointIco;
   
   VarTableFrame varFrame;
+  SimulAVRConfigFrame simulavrFrame;
   private int avaricePort;
   RegistrationFrame registrationFrame;
   String debugKey = null;
+  
   //--------------------
   
   public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation, Platform platform) throws Exception {
@@ -307,6 +310,18 @@ public class Editor extends JFrame implements RunnerListener {
     varFrame = new VarTableFrame();
     registrationFrame = new RegistrationFrame(this);
     breakpointIco = new ImageIcon(Theme.getThemeImage("breakpoint", this, 15, 15));
+    simulavrFrame = new SimulAVRConfigFrame();
+	Map<String, Boolean> initMap = new LinkedHashMap<String, Boolean> ();
+	initMap.put("PORTA.PORT", true);
+	initMap.put("PORTA.PIN", true);
+	initMap.put("PORTA.DDR", false);
+	simulavrFrame.initVCDConfig(initMap);
+	LinkedList<String> mcus = new LinkedList<>();
+	mcus.add("atmega128");
+	simulavrFrame.setMicrocontrollerModel(mcus);
+	simulavrFrame.setCPUFrequency(16000000);
+	
+    
     //--------------------   
 
     header = new EditorHeader(this);

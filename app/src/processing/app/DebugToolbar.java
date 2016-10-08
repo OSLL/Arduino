@@ -15,7 +15,7 @@ public class DebugToolbar extends JPanel {
 	/** Titles for each button when the shift key is pressed. */ 
 	static final String titleShift[] = {
 		tr("Start debug"), tr("Continue"), tr("Stop"), tr("Step Into"), tr("Step Over"),
-		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration"), tr("Open GTKWave") 
+		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration"), tr("Open GTKWave"), tr("Open SimulAVR config") 
 	};	
 	static final int DEBUG     = 0;
 	static final int CONTINUE  = 1;
@@ -27,6 +27,7 @@ public class DebugToolbar extends JPanel {
 	static final int VAR_LIST  = 7;
 	static final int REGISTR  = 8;
 	static final int GTKWAVE  = 9;
+	static final int SIMULAVR  = 9;
 	private JButton debugButton;
 	private JButton continueButton;
 	private JButton stopButton;
@@ -37,6 +38,7 @@ public class DebugToolbar extends JPanel {
 	private JButton varListButton;
 	private JButton registrationButton;
 	private JButton GtkWaveButton;
+	private JButton simulAvrConfigButton;
 	
 	GtkWave gtk;
 		
@@ -137,6 +139,14 @@ public class DebugToolbar extends JPanel {
 				gtk.start();
 			}
 		});
+		simulAvrConfigButton = new JButton(tr("SimulAVR"));
+		simulAvrConfigButton.setToolTipText(titleShift[SIMULAVR]);
+		simulAvrConfigButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				editor.simulavrFrame.setVisible(true);
+			}
+		});
 		add(debugButton);
 		add(continueButton);
 		add(stopButton);
@@ -148,6 +158,7 @@ public class DebugToolbar extends JPanel {
 		add(Box.createHorizontalGlue());
 		add(registrationButton);
 		add(GtkWaveButton);
+		add(simulAvrConfigButton);
 	}
 	
 	public void targetIsRunning(){
