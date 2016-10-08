@@ -2,6 +2,8 @@ package simulavr;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Map;
 
 /**
@@ -34,12 +36,15 @@ class VCDConfigFrame extends JFrame {
       add(new JLabel(name));
       add(checkBox, BorderLayout.EAST);
 
-      checkBox.addItemListener(e -> {
-        if (configMap != null) {
-          if (checkBox.isSelected()) {
-            configMap.put(name, true);
-          } else {
-            configMap.put(name, false);
+      checkBox.addItemListener(new ItemListener() {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          if (configMap != null) {
+            if (checkBox.isSelected()) {
+              configMap.put(name, true);
+            } else {
+              configMap.put(name, false);
+            }
           }
         }
       });

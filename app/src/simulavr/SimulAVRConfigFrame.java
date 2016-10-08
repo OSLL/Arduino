@@ -3,8 +3,7 @@ package simulavr;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,12 @@ public class SimulAVRConfigFrame extends JFrame {
     openVCDConfigFrame = new JButton("Выбор источников для VCD " +
       "трассировки");
     openVCDConfigFrame.setPreferredSize(new Dimension(PREFERRED_WIDTH, 30));
-    openVCDConfigFrame.addActionListener(e -> vcdConfigFrame.setVisible(true));
+    openVCDConfigFrame.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        vcdConfigFrame.setVisible(true);
+      }
+    });
 
     setLayout(new GridLayout(0, 1));
     makeGUI();
@@ -100,11 +104,14 @@ public class SimulAVRConfigFrame extends JFrame {
     enableTracePanel.add(new JLabel("Включить трассировку выполняемых " +
       "процессором инструкций"));
     enableTracePanel.add(enableTrace, BorderLayout.EAST);
-    enableTrace.addItemListener(e -> {
-      if (enableTrace.isSelected()) {
-        enableTrace.setText("Да");
-      } else {
-        enableTrace.setText("Нет");
+    enableTrace.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        if (enableTrace.isSelected()) {
+          enableTrace.setText("Да");
+        } else {
+          enableTrace.setText("Нет");
+        }
       }
     });
     add(enableTracePanel);
@@ -114,11 +121,14 @@ public class SimulAVRConfigFrame extends JFrame {
     enableDebugPanel.setPreferredSize(preferredPanelDimension);
     enableDebugPanel.add(new JLabel("Запустить режим отладки"));
     enableDebugPanel.add(enableDebug, BorderLayout.EAST);
-    enableDebug.addItemListener(e -> {
-      if (enableDebug.isSelected()) {
-        enableDebug.setText("Да");
-      } else {
-        enableDebug.setText("Нет");
+    enableDebug.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        if (enableDebug.isSelected()) {
+          enableDebug.setText("Да");
+        } else {
+          enableDebug.setText("Нет");
+        }
       }
     });
     add(enableDebugPanel);
@@ -136,15 +146,18 @@ public class SimulAVRConfigFrame extends JFrame {
     enableVCDTracePanel.setPreferredSize(preferredPanelDimension);
     enableVCDTracePanel.add(new JLabel("Включить VCD трассировку"));
     enableVCDTracePanel.add(enableVCDTrace, BorderLayout.EAST);
-    enableVCDTrace.addItemListener(e -> {
-      if (enableVCDTrace.isSelected()) {
-        add(openVCDConfigFrame);
-        enableVCDTrace.setText("Да");
-      } else {
-        remove(openVCDConfigFrame);
-        enableVCDTrace.setText("Нет");
+    enableVCDTrace.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+        if (enableVCDTrace.isSelected()) {
+          SimulAVRConfigFrame.this.add(openVCDConfigFrame);
+          enableVCDTrace.setText("Да");
+        } else {
+          SimulAVRConfigFrame.this.remove(openVCDConfigFrame);
+          enableVCDTrace.setText("Нет");
+        }
+        SimulAVRConfigFrame.this.pack();
       }
-      pack();
     });
     add(enableVCDTracePanel);
 
