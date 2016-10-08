@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.text.NumberFormat;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Ploskov Aleksandr
@@ -214,7 +213,11 @@ public class SimulAVRConfigFrame extends JFrame {
     enableVCDTrace.setSelected(flag);
   }
 
-  public void setVCDConfig(Map<String, Boolean> initConfig) {
-    vcdConfigFrame.initComponents(initConfig);
+  public void setVCDConfig(String name, boolean flag) {
+    vcdConfigFrame.setElement(name, flag);
+  }
+
+  public boolean getVCDConfig(String name) {
+    return vcdConfigFrame.getElement(name);
   }
 }
