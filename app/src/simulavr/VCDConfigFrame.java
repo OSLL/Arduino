@@ -1,9 +1,12 @@
 package simulavr;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Ploskov Aleksandr
@@ -18,18 +21,24 @@ class VCDConfigFrame extends JFrame {
     configMap = new HashMap<>();
   }
 
-  void putElement(String name, boolean flag) {
-    if (configMap.containsKey(name)) {
-      configMap.get(name).setFlag(flag);
+  void initElements(Map<String, Boolean> initMap) {
+    for (String name : initMap.keySet()) {
+      Panel newPanel = new Panel(name, initMap.get(name));
+      configMap.put(name, newPanel);
+      add(newPanel);
     }
 
-    Panel newPanel = new Panel(name, flag);
-    configMap.put(name, newPanel);
-    add(newPanel);
+    pack();
   }
 
-  boolean getElement(String name) {
-    return configMap.get(name).getFlag();
+  Map<String, Boolean> getElements() {
+    Map<String, Boolean> newMap = new HashMap<>(configMap.size());
+
+    for (String name : configMap.keySet()) {
+      newMap.put(name, configMap.get(name).getFlag());
+    }
+
+    return newMap;
   }
 
   private class Panel extends JPanel {
