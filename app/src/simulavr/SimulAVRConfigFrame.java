@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Ploskov Aleksandr
@@ -147,5 +149,59 @@ public class SimulAVRConfigFrame extends JFrame {
     add(enableVCDTracePanel);
 
     pack();
+  }
+
+  public String getMicrocontrollerModel() {
+    return (String) microcontrollerModel.getSelectedItem();
+  }
+
+  public void setMicrocontrollerModel(List<String> microcontrollerList) {
+    for (String microcontroller : microcontrollerList) {
+      microcontrollerModel.addItem(microcontroller);
+    }
+  }
+
+  public int getCPUFrequency() {
+    return Integer.parseInt(cpuFrequency.getText());
+  }
+
+  public void setCPUFrequency(int frequency) {
+    cpuFrequency.setText(Integer.toString(frequency));
+  }
+
+  public boolean getEnableTrace() {
+    return enableTrace.isSelected();
+  }
+
+  public void setEnableTrace(boolean flag) {
+    enableTrace.setSelected(flag);
+  }
+
+  public boolean getEnableDebug() {
+    return enableDebug.isSelected();
+  }
+
+  public void setEnableDebug(boolean flag) {
+    enableDebug.setSelected(flag);
+  }
+
+  public int getMaxRunTime() {
+    return Integer.parseInt(maxRunTime.getText());
+  }
+
+  public void setMaxRunTime(int nanoseconds) {
+    maxRunTime.setText(Integer.toString(nanoseconds));
+  }
+
+  public boolean getEnableVCDTrace() {
+    return enableVCDTrace.isSelected();
+  }
+
+  public void setEnableVCDTrace(boolean flag) {
+    enableVCDTrace.setSelected(flag);
+  }
+
+  public void setVCDConfig(Map<String, Boolean> initConfig) {
+    vcdConfigFrame.initComponents(initConfig);
   }
 }

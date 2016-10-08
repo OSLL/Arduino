@@ -16,10 +16,16 @@ class VCDConfigFrame extends JFrame {
     setLayout(new GridLayout(0, 1));
   }
 
+  void initComponents(Map<String, Boolean> initMap) {
+    for (String elem : initMap.keySet()) {
+      add(new Panel(elem, initMap.get(elem)));
+    }
+  }
+
   private class Panel extends JPanel {
     private final JCheckBox checkBox;
 
-    public Panel(String name) {
+    Panel(String name, boolean initFlag) {
       checkBox = new JCheckBox();
 
       setLayout(new BorderLayout());
