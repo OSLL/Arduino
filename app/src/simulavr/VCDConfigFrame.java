@@ -17,6 +17,8 @@ class VCDConfigFrame extends JFrame {
   }
 
   void initComponents(Map<String, Boolean> initMap) {
+    configMap = initMap;
+
     for (String elem : initMap.keySet()) {
       add(new Panel(elem, initMap.get(elem)));
     }
