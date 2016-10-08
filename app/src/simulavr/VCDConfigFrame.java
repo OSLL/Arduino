@@ -1,29 +1,44 @@
 package simulavr;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Ploskov Aleksandr
  */
 class VCDConfigFrame extends JFrame {
-  private Map<String, Boolean> configMap;
+  private Map<String, Panel> configMap;
 
   VCDConfigFrame() {
     super("Источники для VCD трассировки");
 
     setLayout(new GridLayout(0, 1));
+    configMap = new HashMap<>();
   }
 
-  void initComponents(Map<String, Boolean> initMap) {
-    configMap = initMap;
-
-    for (String elem : initMap.keySet()) {
-      add(new Panel(elem, initMap.get(elem)));
+  void initElements(Map<String, Boolean> initMap) {
+    for (String name : initMap.keySet()) {
+      Panel newPanel = new Panel(name, initMap.get(name));
+      configMap.put(name, newPanel);
+      add(newPanel);
     }
+
+    pack();
+  }
+
+  Map<String, Boolean> getElements() {
+    Map<String, Boolean> newMap = new HashMap<>(configMap.size());
+
+    for (String name : configMap.keySet()) {
+      newMap.put(name, configMap.get(name).getFlag());
+    }
+
+    return newMap;
   }
 
   private class Panel extends JPanel {
@@ -31,23 +46,19 @@ class VCDConfigFrame extends JFrame {
 
     Panel(String name, boolean initFlag) {
       checkBox = new JCheckBox();
+      checkBox.setSelected(initFlag);
 
       setLayout(new BorderLayout());
       add(new JLabel(name));
       add(checkBox, BorderLayout.EAST);
+    }
 
-      checkBox.addItemListener(new ItemListener() {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          if (configMap != null) {
-            if (checkBox.isSelected()) {
-              configMap.put(name, true);
-            } else {
-              configMap.put(name, false);
-            }
-          }
-        }
-      });
+    boolean getFlag() {
+      return checkBox.isSelected();
+    }
+
+    void setFlag(boolean flag) {
+      checkBox.setSelected(flag);
     }
   }
 }

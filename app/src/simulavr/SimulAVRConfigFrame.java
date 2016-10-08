@@ -1,5 +1,7 @@
 package simulavr;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
@@ -214,7 +216,11 @@ public class SimulAVRConfigFrame extends JFrame {
     enableVCDTrace.setSelected(flag);
   }
 
-  public void setVCDConfig(Map<String, Boolean> initConfig) {
-    vcdConfigFrame.initComponents(initConfig);
+  public void initVCDConfig(Map<String, Boolean> initMap) {
+    vcdConfigFrame.initElements(initMap);
+  }
+
+  public Map<String, Boolean> getVCDConfig() {
+    return vcdConfigFrame.getElements();
   }
 }
