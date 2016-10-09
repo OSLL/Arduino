@@ -6,8 +6,6 @@ import java.util.LinkedHashMap;
 
 public class SimulAVRConfigs implements Serializable {
 	private static final long serialVersionUID = -235225560474202938L;
-	/** List of all supported MCU*/
-	private ArrayList<String> mcuList;
 	/** Current selected MCU*/
 	private String selectedMcu;
 	/** MCU's CPU frequency*/
@@ -25,17 +23,9 @@ public class SimulAVRConfigs implements Serializable {
 	
 	public SimulAVRConfigs() {
 	}
-	
-	public ArrayList<String> getMcuList() {
-		return mcuList;
-	}
-	public void setMcuList(ArrayList<String> mcuList) {
-		this.mcuList = mcuList;
-	}
 	public String getSelectedMcu() {
 		return selectedMcu;
 	}
-
 	public void setSelectedMcu(String selectedMcu) {
 		this.selectedMcu = selectedMcu;
 	}
