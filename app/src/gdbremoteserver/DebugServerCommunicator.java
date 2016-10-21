@@ -11,15 +11,19 @@ import java.net.Socket;
 
 import avrdebug.communication.Message;
 import avrdebug.communication.Messenger;
+import avrdebug.communication.SimulAVRConfigs;
+import avrdebug.communication.SimulAVRInitData;
 
 public class DebugServerCommunicator {
 
 	
 	String address;
 	int port;
-	public DebugServerCommunicator(String address, int port) {
+	private SimulatorResultReceivedEvent event;
+	public DebugServerCommunicator(String address, int port, SimulatorResultReceivedEvent event) {
 		this.address = address;
 		this.port = port;
+		this.event = event;
 	}
 	
 	public int loadAndRun(File file, String key){
@@ -46,7 +50,48 @@ public class DebugServerCommunicator {
 		if(message.getText().equals("OK"))
 			return message.getParameter();
 		else return -2;
+	}
 
+	public int loadAndRunSimulator(File file, String key, final String resultStoragePath,SimulAVRConfigs configs){
+//		Message message = null;
+		try {		
+			final Socket s = new Socket(address, port);
+			Messenger.writeMessage(s, new Message("LOAD_SIMUL"));
+			Messenger.writeSimulAVRConfigs(s, configs);
+			sendFile(s, file);
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						loadFile(s, resultStoragePath + "simulAVR-vcd-output");
+						s.close();
+						event.resultReceived();
+					} catch (IOException e) {
+					}		
+				}
+			});
+			thread.start();
+//			message = Messenger.readMessage(s);
+			
+		} catch (IOException e) {
+			return -1;
+		}
+//		if(message.getText().equals("OK"))
+//			return message.getParameter();
+//		else return -2;
+		return 0;
+	}	
+	
+	public SimulAVRInitData getSimulAvrInitData(){
+		SimulAVRInitData result = null;
+		try {
+			Socket s = new Socket(address, port);
+			Messenger.writeMessage(s, new Message("GET_INIT_SIMUL_CONFIG"));
+			result = Messenger.readSimulAVRInitData(s);
+			return result;
+		} catch (IOException e) {
+			return null;
+		}
 	}
 	
 	private void sendFile(Socket s, File file) throws IOException{
@@ -61,6 +106,18 @@ public class DebugServerCommunicator {
 		}
 		rfile.close();
 	}
-		
+	
+	private void loadFile(Socket s, String filename) throws IOException{
+		System.out.println("Loading file");
+		InputStream inputStream = s.getInputStream();
+		DataInputStream dis = new DataInputStream(inputStream);
+			long size = dis.readLong();
+			RandomAccessFile file = new RandomAccessFile(filename, "rw");
+			for(long i=0; i<size; i++){
+				file.writeByte(dis.readByte());
+			}
+			file.close();
+	}
+	
 }
 

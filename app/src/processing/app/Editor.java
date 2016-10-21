@@ -22,6 +22,9 @@
 
 package processing.app;
 
+import avrdebug.communication.Messenger;
+import avrdebug.communication.SimulAVRConfigs;
+import avrdebug.communication.SimulAVRInitData;
 import cc.arduino.packages.BoardPort;
 import cc.arduino.packages.MonitorFactory;
 import cc.arduino.packages.Uploader;
@@ -35,6 +38,8 @@ import gdbremoteserver.DebugServerCommunicator;
 import gdbremoteserver.GdbBreakpointHandler;
 import gdbremoteserver.LineBreakpoint;
 import gdbremoteserver.RegistrationFrame;
+import gdbremoteserver.SimulatorResultReceivedEvent;
+import gtkwave.GtkWave;
 import jssc.SerialPortException;
 import processing.app.debug.RunnerException;
 import processing.app.forms.PasswordAuthorizationDialog;
@@ -84,7 +89,7 @@ import static processing.app.Theme.scale;
  * Main editor panel for the Processing Development Environment.
  */
 @SuppressWarnings("serial")
-public class Editor extends JFrame implements RunnerListener {
+public class Editor extends JFrame implements RunnerListener, SimulatorResultReceivedEvent {
 
   public static final int MAX_TIME_AWAITING_FOR_RESUMING_SERIAL_MONITOR = 10000;
 
@@ -211,11 +216,15 @@ public class Editor extends JFrame implements RunnerListener {
   //pro100kot--------------------
   Runnable runDebugHandler = new DebugHandler();
   Runnable presentDebugHandler = new DebugHandler(true);
+  Runnable runDebugSimulatorHandler = new DebugSimulatorHandler();
+  Runnable presentDebugSimulatorHandler = new DebugSimulatorHandler(true);
   private Runnable runAndSaveDebugHandler = new DebugHandler(false, true);
   private Runnable presentAndSaveDebugHandler = new DebugHandler(true, true);
+  private Runnable runAndSaveDebugSimulatorHandler = new DebugSimulatorHandler(false, true);
+  private Runnable presentAndSaveDebugSimulatorHandler = new DebugSimulatorHandler(true, true);  
   GdbDebugProcess debugProcess;
   private GdbBreakpointHandler breakpointHandler;
-
+  DebugServerCommunicator communicator;
   private TracingHandler tracingHandler;
   
   private HashMap<LineBreakpoint, GutterIconInfo> userBreakpoints;
@@ -226,9 +235,13 @@ public class Editor extends JFrame implements RunnerListener {
   
   VarTableFrame varFrame;
   SimulAVRConfigFrame simulavrFrame;
+  SimulAVRInitData simulAvrInitData;
+  SimulAVRConfigs simulAvrConfigs;
   private int avaricePort;
   RegistrationFrame registrationFrame;
   String debugKey = null;
+  GtkWave gtkwave = null;
+  
   
   //--------------------
   
@@ -311,16 +324,30 @@ public class Editor extends JFrame implements RunnerListener {
     registrationFrame = new RegistrationFrame(this);
     breakpointIco = new ImageIcon(Theme.getThemeImage("breakpoint", this, 15, 15));
     simulavrFrame = new SimulAVRConfigFrame();
-	Map<String, Boolean> initMap = new LinkedHashMap<String, Boolean> ();
-	initMap.put("PORTA.PORT", true);
-	initMap.put("PORTA.PIN", true);
-	initMap.put("PORTA.DDR", false);
-	simulavrFrame.initVCDConfig(initMap);
-	LinkedList<String> mcus = new LinkedList<>();
-	mcus.add("atmega128");
-	simulavrFrame.setMicrocontrollerModel(mcus);
-	simulavrFrame.setCPUFrequency(16000000);
+    communicator = new DebugServerCommunicator(
+			PreferencesData.get("debug.server.address", "localhost"),
+			PreferencesData.getInteger("debug.server.port", 3129), this);
+    //Map<String, Boolean> initMap = new LinkedHashMap<String, Boolean> ();
+	//initMap.put("PORTA.PORT", true);
+	//initMap.put("PORTA.PIN", true);
+	//initMap.put("PORTA.DDR", false);
+	//simulavrFrame.initVCDConfig(initMap);
+	//LinkedList<String> mcus = new LinkedList<>();
+	//mcus.add("atmega128");
+	//simulavrFrame.setMicrocontrollerModel(mcus);
+	//simulavrFrame.setCPUFrequency(16000000);
 	
+	simulAvrConfigs = new SimulAVRConfigs();
+	simulAvrConfigs.setCpuFreq(16000000);
+	simulAvrConfigs.setMaxRunTime(6000000);
+	simulAvrConfigs.setDebugEnable(false);
+	simulAvrConfigs.setTraceEnable(false);
+	simulAvrConfigs.setVCDTraceEnable(true);
+	simulAvrConfigs.setSelectedMcu("atmega128");
+	LinkedHashMap<String, Boolean> map = new LinkedHashMap<>();
+	map.put("+ PORTA.PORT", true);
+	map.put("+ PORTA.PIN", true);
+	simulAvrConfigs.setVcdSources(map);
     
     //--------------------   
 
@@ -399,6 +426,11 @@ public class Editor extends JFrame implements RunnerListener {
 
 //pro100kot--------------------
   
+  public void resultReceived(){
+	  gtkwave = new GtkWave(sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "simulAVR-vcd-output");
+	  gtkwave.start(); 
+  }
+  
   public void setDebugKey(String debugKey) {
 	this.debugKey = debugKey;
 }
@@ -431,6 +463,16 @@ public class Editor extends JFrame implements RunnerListener {
 		//
 		varFrame.clear();
   }
+  
+  /**
+   * @return true if config succesfuly loaded */
+  boolean loadSimulatorInitConfig(){
+	  simulAvrInitData = communicator.getSimulAvrInitData();
+	  if(simulAvrInitData == null)
+		  return false;
+	  return true;
+  }
+  
   //--------------------
   
   /**
@@ -1935,9 +1977,6 @@ public class Editor extends JFrame implements RunnerListener {
 				System.out.println("\n");
 			System.out
 					.println("Starting to download sketch to remote target\n");
-			DebugServerCommunicator communicator = new DebugServerCommunicator(
-					PreferencesData.get("debug.server.address", "localhost"),
-					PreferencesData.getInteger("debug.server.port", 3129));
 			String hexPath = "";
 			String elfPath = "";
 			try {
@@ -1963,6 +2002,96 @@ public class Editor extends JFrame implements RunnerListener {
 			}
 		}
 	}
+	  
+	  public void handleSimulatorDebug(final boolean verbose, Runnable verboseHandler, Runnable nonVerboseHandler) {
+		    handleSimulatorDebug(verbose, new ShouldSaveIfModified(), verboseHandler, nonVerboseHandler);
+		  }
+
+	  private void handleSimulatorDebug(final boolean verbose, Predicate<SketchController> shouldSavePredicate, Runnable verboseHandler, Runnable nonVerboseHandler) {
+		    if (shouldSavePredicate.test(sketchController)) {
+		        handleSave(true);
+		      }
+		    toolbar.activateRun();
+		    status.progress("Compiling sketch...");
+
+		    // do this to advance/clear the terminal window / dos prompt / etc
+		    for (int i = 0; i < 10; i++) System.out.println();
+
+		    // clear the console on each run, unless the user doesn't want to
+		    if (PreferencesData.getBoolean("console.auto_clear")) {
+		      console.clear();
+		    }
+
+		    // Cannot use invokeLater() here, otherwise it gets
+		    // placed on the event thread and causes a hang--bad idea all around.
+		    new Thread(verbose ? verboseHandler : nonVerboseHandler).start();
+		  }
+		  
+		  class DebugSimulatorHandler implements Runnable {
+			private final boolean verbose;
+			private final boolean saveHex;
+			
+			public DebugSimulatorHandler() {
+				this(false);
+			}
+			
+			public DebugSimulatorHandler(boolean verbose){
+				this(verbose, false);
+			}
+			
+			public DebugSimulatorHandler(boolean verbose, boolean saveHex){
+				this.verbose = verbose;
+				this.saveHex = saveHex;
+			}
+			  
+			@Override
+			public void run() {
+				try {
+					System.out.println("Starting to compiling your sketch\n");
+					removeAllLineHighlights();
+					sketchController.build(verbose, saveHex);
+					statusNotice(tr("Done compiling."));
+				} catch (PreferencesMapException e) {
+					statusError(I18n
+							.format(tr("Error while compiling: missing '{0}' configuration parameter"),
+									e.getMessage()));
+				} catch (Exception e) {
+					status.unprogress();
+					statusError(e);
+				}
+
+				status.unprogress();
+				toolbar.deactivateRun();
+
+				for (int i = 0; i < 5; i++)
+					System.out.println("\n");
+				System.out
+						.println("Starting to download sketch to remote target\n");
+				String hexPath = "";
+				String elfPath = "";
+				try {
+					hexPath = sketchController.getSketch().getBuildPath().getAbsolutePath()
+							+ "/" + sketch.getName() + ".ino.hex";
+					elfPath = sketchController.getSketch().getBuildPath().getAbsolutePath()
+							+ "/" + sketch.getName() + ".ino.elf";
+				} catch (IOException e) {
+
+				}
+				System.out.println(" hexPath " + hexPath);
+				File hexFile = new File(hexPath);
+				System.out.println(" hexFile.exist() " + hexFile.exists());
+				System.out.println(" hexFile.length() " + hexFile.length());
+				int res = communicator.loadAndRunSimulator(new File(elfPath), debugKey, sketchController.getSketch().getFolder().getAbsolutePath() + "/", simulAvrConfigs);
+				if (res > 0) {
+					System.out.println("Download OK\n");
+					avaricePort = res;
+					startDebugSession(elfPath);
+				} else {
+					System.out.println("Download Error:" + res + " \n");
+					return;
+				}
+			}
+		}	  
 	  //--------------------  
   
   class BuildHandler implements Runnable {

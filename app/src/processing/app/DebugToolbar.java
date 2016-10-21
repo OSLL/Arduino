@@ -39,7 +39,7 @@ public class DebugToolbar extends JPanel {
 	private JButton registrationButton;
 	private JButton GtkWaveButton;
 	private JButton simulAvrConfigButton;
-	
+	private JCheckBox useSimulatorChekBox;
 	GtkWave gtk;
 		
 	public DebugToolbar(Editor _editor) {
@@ -55,7 +55,12 @@ public class DebugToolbar extends JPanel {
 				if(newKey == null)
 					return;
 				editor.setDebugKey(newKey);
-				editor.handleRun(false, editor.presentDebugHandler, editor.runDebugHandler);
+				if(useSimulatorChekBox.isSelected()){
+					editor.handleRun(false, editor.presentDebugSimulatorHandler, editor.runDebugSimulatorHandler);
+				}else{
+					editor.handleRun(false, editor.presentDebugSimulatorHandler, editor.runDebugSimulatorHandler);	
+				}
+				
 			}
 		});
 		continueButton = new JButton(new ImageIcon(Theme.getThemeImage("resume", this, 15, 15)));
@@ -129,24 +134,45 @@ public class DebugToolbar extends JPanel {
 					editor.registrationFrame.setVisible(true);
 			}
 		});
+		useSimulatorChekBox = new JCheckBox(tr("Use SimulAVR"), false);
+		useSimulatorChekBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JCheckBox chb = (JCheckBox) arg0.getSource();
+				if(chb.isSelected()){
+					System.out.println("Trying load simulator configs");
+					if(editor.loadSimulatorInitConfig()){
+						System.out.println("Configs successfuly loaded");
+						simulAvrConfigButton.setEnabled(true);
+						return;
+					}
+					System.err.println("Unable to load simulator configs");
+					chb.setSelected(false);
+				}else{
+					simulAvrConfigButton.setEnabled(false);
+				}
+			}
+		});
 		GtkWaveButton = new JButton(tr("GTKWave"));
 		GtkWaveButton.setToolTipText(titleShift[GTKWAVE]);
 		GtkWaveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				//gtk = new GtkWave(editor.sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "outvcd");
-				gtk = new GtkWave(null);
+				gtk = new GtkWave(editor.sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "outvcd");
 				gtk.start();
 			}
 		});
-		simulAvrConfigButton = new JButton(tr("SimulAVR"));
+		simulAvrConfigButton = new JButton(tr("SimulAVR config"));
 		simulAvrConfigButton.setToolTipText(titleShift[SIMULAVR]);
+		simulAvrConfigButton.setEnabled(false);
 		simulAvrConfigButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				editor.simulavrFrame.setVisible(true);
 			}
 		});
+		
+		
 		add(debugButton);
 		add(continueButton);
 		add(stopButton);
@@ -157,6 +183,9 @@ public class DebugToolbar extends JPanel {
 		add(varListButton);
 		add(Box.createHorizontalGlue());
 		add(registrationButton);
+		add(Box.createHorizontalGlue());
+		add(useSimulatorChekBox);
+		add(Box.createHorizontalGlue());
 		add(GtkWaveButton);
 		add(simulAvrConfigButton);
 	}
