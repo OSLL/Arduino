@@ -193,7 +193,7 @@ class SimulAVRConfigFrame extends JFrame {
     }
   }
 
-  private long getCPUFrequency() {
+  public long getCPUFrequency() {
     return Long.parseLong(cpuFrequency.getText());
   }
 
@@ -201,7 +201,7 @@ class SimulAVRConfigFrame extends JFrame {
     cpuFrequency.setText(Integer.toString(frequency));
   }
 
-  private boolean getEnableTrace() {
+  public boolean getEnableTrace() {
     return enableTrace.isSelected();
   }
 
@@ -209,7 +209,7 @@ class SimulAVRConfigFrame extends JFrame {
     enableTrace.setSelected(flag);
   }
 
-  private boolean getEnableDebug() {
+  public boolean getEnableDebug() {
     return enableDebug.isSelected();
   }
 
@@ -217,7 +217,7 @@ class SimulAVRConfigFrame extends JFrame {
     enableDebug.setSelected(flag);
   }
 
-  private long getMaxRunTime() {
+  public long getMaxRunTime() {
     return Long.parseLong(maxRunTime.getText());
   }
 
@@ -225,7 +225,7 @@ class SimulAVRConfigFrame extends JFrame {
     maxRunTime.setText(Integer.toString(nanoseconds));
   }
 
-  private boolean getEnableVCDTrace() {
+  public boolean getEnableVCDTrace() {
     return enableVCDTrace.isSelected();
   }
 
