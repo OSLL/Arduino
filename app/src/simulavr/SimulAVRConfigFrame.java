@@ -34,7 +34,7 @@ class SimulAVRConfigFrame extends JFrame {
   SimulAVRConfigFrame() {
     super("Конфигурация SimulAVR");
 
-    configs = new SimulAVRConfigs();
+    configs = null;
 
     PREFERRED_WIDTH = 640;
     Dimension preferredDimension = new Dimension(PREFERRED_WIDTH / 3, 30);
@@ -268,6 +268,8 @@ class SimulAVRConfigFrame extends JFrame {
   }
 
   private void saveData() {
+    configs = new SimulAVRConfigs();
+
     configs.setCpuFreq(getCPUFrequency());
     configs.setDebugEnable(getEnableDebug());
     configs.setMaxRunTime(getMaxRunTime());
