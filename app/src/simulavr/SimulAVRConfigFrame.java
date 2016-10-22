@@ -1,11 +1,15 @@
 package simulavr;
 
+import avrdebug.communication.SimulAVRConfigs;
+import avrdebug.communication.SimulAVRInitData;
+
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +29,7 @@ class SimulAVRConfigFrame extends JFrame {
 
   private VCDConfigFrame vcdConfigFrame;
   private Map<String, ArrayList<String>> vcdConfigs;
+  private SimulAVRConfigs configs;
 
   SimulAVRConfigFrame() {
     super("Конфигурация SimulAVR");
@@ -178,17 +183,17 @@ class SimulAVRConfigFrame extends JFrame {
     pack();
   }
 
-  String getMicrocontrollerModel() {
+  public String getMicrocontrollerModel() {
     return (String) microcontrollerModel.getSelectedItem();
   }
 
-  void setMicrocontrollerModel(List<String> microcontrollerList) {
+  private void setMicrocontrollerModel(List<String> microcontrollerList) {
     for (String microcontroller : microcontrollerList) {
       microcontrollerModel.addItem(microcontroller);
     }
   }
 
-  long getCPUFrequency() {
+  private long getCPUFrequency() {
     return Long.parseLong(cpuFrequency.getText());
   }
 
@@ -196,7 +201,7 @@ class SimulAVRConfigFrame extends JFrame {
     cpuFrequency.setText(Integer.toString(frequency));
   }
 
-  boolean getEnableTrace() {
+  private boolean getEnableTrace() {
     return enableTrace.isSelected();
   }
 
@@ -204,7 +209,7 @@ class SimulAVRConfigFrame extends JFrame {
     enableTrace.setSelected(flag);
   }
 
-  boolean getEnableDebug() {
+  private boolean getEnableDebug() {
     return enableDebug.isSelected();
   }
 
@@ -212,7 +217,7 @@ class SimulAVRConfigFrame extends JFrame {
     enableDebug.setSelected(flag);
   }
 
-  long getMaxRunTime() {
+  private long getMaxRunTime() {
     return Long.parseLong(maxRunTime.getText());
   }
 
@@ -220,7 +225,7 @@ class SimulAVRConfigFrame extends JFrame {
     maxRunTime.setText(Integer.toString(nanoseconds));
   }
 
-  boolean getEnableVCDTrace() {
+  private boolean getEnableVCDTrace() {
     return enableVCDTrace.isSelected();
   }
 
@@ -228,11 +233,49 @@ class SimulAVRConfigFrame extends JFrame {
     enableVCDTrace.setSelected(flag);
   }
 
-  void initVCDConfig(Map<String, ArrayList<String>> vcdConfigs) {
+  private void initVCDConfig(Map<String, ArrayList<String>> vcdConfigs) {
     this.vcdConfigs = vcdConfigs;
   }
 
-  Map<String, Boolean> getVCDConfig() {
+  public Map<String, Boolean> getVCDConfig() {
     return vcdConfigFrame.getElements();
+  }
+
+  public void initFrame(SimulAVRInitData initData) {
+    Map<String, ArrayList<String>> data = initData.getMcuVCDSources();
+    ArrayList<String> microcontrollers = new ArrayList<>(data.keySet());
+
+    initVCDConfig(data);
+    setMicrocontrollerModel(microcontrollers);
+    addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        int dialogResult = JOptionPane.showConfirmDialog(null,
+          "Would you like to save configs?",
+          "Warning",
+          JOptionPane.YES_NO_OPTION);
+
+        if (dialogResult == JOptionPane.YES_OPTION) {
+          saveData();
+        }
+        super.windowClosing(e);
+      }
+    });
+
+    setVisible(true);
+  }
+
+  private void saveData() {
+    configs.setCpuFreq(getCPUFrequency());
+    configs.setDebugEnable(getEnableDebug());
+    configs.setMaxRunTime(getMaxRunTime());
+    configs.setSelectedMcu(getMicrocontrollerModel());
+    configs.setTraceEnable(getEnableTrace());
+    configs.setVCDTraceEnable(getEnableVCDTrace());
+    configs.setVcdSources(new LinkedHashMap<>(getVCDConfig()));
+  }
+
+  public SimulAVRConfigs getConfigs() {
+    return configs;
   }
 }
