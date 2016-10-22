@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.List;
 
 /**
  * Created by Ploskov Aleksandr
@@ -19,9 +19,9 @@ class VCDConfigFrame extends JFrame {
     configMap = new HashMap<>();
   }
 
-  void initElements(Map<String, Boolean> initMap) {
-    for (String name : initMap.keySet()) {
-      Panel newPanel = new Panel(name, initMap.get(name));
+  void initElements(List<String> names) {
+    for (String name : names) {
+      Panel newPanel = new Panel(name, false);
       configMap.put(name, newPanel);
       add(newPanel);
     }

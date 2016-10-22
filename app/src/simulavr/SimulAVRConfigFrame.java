@@ -5,13 +5,14 @@ import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by Ploskov Aleksandr
  */
-public class SimulAVRConfigFrame extends JFrame {
+class SimulAVRConfigFrame extends JFrame {
   private final int PREFERRED_WIDTH;
 
   private final JComboBox<String> microcontrollerModel;
@@ -22,9 +23,10 @@ public class SimulAVRConfigFrame extends JFrame {
   private final JToggleButton enableVCDTrace;
   private final JButton openVCDConfigFrame;
 
-  private final VCDConfigFrame vcdConfigFrame;
+  private VCDConfigFrame vcdConfigFrame;
+  private Map<String, ArrayList<String>> vcdConfigs;
 
-  public SimulAVRConfigFrame() {
+  SimulAVRConfigFrame() {
     super("Конфигурация SimulAVR");
 
     PREFERRED_WIDTH = 640;
@@ -37,11 +39,21 @@ public class SimulAVRConfigFrame extends JFrame {
 
     microcontrollerModel = new JComboBox<>();
     microcontrollerModel.setPreferredSize(preferredDimension);
+    microcontrollerModel.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        String microcontroller = (String) microcontrollerModel.getSelectedItem();
+        vcdConfigFrame.setVisible(false);
+        vcdConfigFrame = new VCDConfigFrame();
+        vcdConfigFrame.initElements(vcdConfigs.get(microcontroller));
+      }
+    });
 
     cpuFrequency = new JFormattedTextField(numberFormatter);
     cpuFrequency.setHorizontalAlignment(SwingConstants.RIGHT);
     cpuFrequency.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     cpuFrequency.setPreferredSize(preferredDimension);
+    cpuFrequency.setText(Integer.toString(0));
 
     enableTrace = new JToggleButton("Нет");
     enableTrace.setPreferredSize(preferredDimension);
@@ -53,6 +65,7 @@ public class SimulAVRConfigFrame extends JFrame {
     maxRunTime.setHorizontalAlignment(SwingConstants.RIGHT);
     maxRunTime.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     maxRunTime.setPreferredSize(preferredDimension);
+    maxRunTime.setText(Integer.toString(0));
 
     enableVCDTrace = new JToggleButton("Нет");
     enableVCDTrace.setPreferredSize(preferredDimension);
@@ -73,11 +86,12 @@ public class SimulAVRConfigFrame extends JFrame {
     makeGUI();
     addWindowListener(new WindowAdapter() {
       @Override
-      public void windowClosing(WindowEvent e) {
+      public void windowClosed(WindowEvent e) {
         vcdConfigFrame.setVisible(false);
-        super.windowClosing(e);
+        super.windowClosed(e);
       }
     });
+
     //setVisible(true);
   }
 
@@ -164,25 +178,25 @@ public class SimulAVRConfigFrame extends JFrame {
     pack();
   }
 
-  public String getMicrocontrollerModel() {
+  String getMicrocontrollerModel() {
     return (String) microcontrollerModel.getSelectedItem();
   }
 
-  public void setMicrocontrollerModel(List<String> microcontrollerList) {
+  void setMicrocontrollerModel(List<String> microcontrollerList) {
     for (String microcontroller : microcontrollerList) {
       microcontrollerModel.addItem(microcontroller);
     }
   }
 
-  public int getCPUFrequency() {
-    return Integer.parseInt(cpuFrequency.getText());
+  long getCPUFrequency() {
+    return Long.parseLong(cpuFrequency.getText());
   }
 
   public void setCPUFrequency(int frequency) {
     cpuFrequency.setText(Integer.toString(frequency));
   }
 
-  public boolean getEnableTrace() {
+  boolean getEnableTrace() {
     return enableTrace.isSelected();
   }
 
@@ -190,7 +204,7 @@ public class SimulAVRConfigFrame extends JFrame {
     enableTrace.setSelected(flag);
   }
 
-  public boolean getEnableDebug() {
+  boolean getEnableDebug() {
     return enableDebug.isSelected();
   }
 
@@ -198,15 +212,15 @@ public class SimulAVRConfigFrame extends JFrame {
     enableDebug.setSelected(flag);
   }
 
-  public int getMaxRunTime() {
-    return Integer.parseInt(maxRunTime.getText());
+  long getMaxRunTime() {
+    return Long.parseLong(maxRunTime.getText());
   }
 
   public void setMaxRunTime(int nanoseconds) {
     maxRunTime.setText(Integer.toString(nanoseconds));
   }
 
-  public boolean getEnableVCDTrace() {
+  boolean getEnableVCDTrace() {
     return enableVCDTrace.isSelected();
   }
 
@@ -214,11 +228,11 @@ public class SimulAVRConfigFrame extends JFrame {
     enableVCDTrace.setSelected(flag);
   }
 
-  public void initVCDConfig(Map<String, Boolean> initMap) {
-    vcdConfigFrame.initElements(initMap);
+  void initVCDConfig(Map<String, ArrayList<String>> vcdConfigs) {
+    this.vcdConfigs = vcdConfigs;
   }
 
-  public Map<String, Boolean> getVCDConfig() {
+  Map<String, Boolean> getVCDConfig() {
     return vcdConfigFrame.getElements();
   }
 }
