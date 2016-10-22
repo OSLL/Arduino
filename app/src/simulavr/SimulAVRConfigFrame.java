@@ -34,6 +34,8 @@ class SimulAVRConfigFrame extends JFrame {
   SimulAVRConfigFrame() {
     super("Конфигурация SimulAVR");
 
+    configs = new SimulAVRConfigs();
+
     PREFERRED_WIDTH = 640;
     Dimension preferredDimension = new Dimension(PREFERRED_WIDTH / 3, 30);
 
