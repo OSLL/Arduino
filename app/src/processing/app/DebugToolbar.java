@@ -56,9 +56,13 @@ public class DebugToolbar extends JPanel {
 					return;
 				editor.setDebugKey(newKey);
 				if(useSimulatorChekBox.isSelected()){
+					if(editor.simulavrFrame.getConfigs()== null){
+						System.err.println("Configure simulator first");
+						return;
+					}
 					editor.handleRun(false, editor.presentDebugSimulatorHandler, editor.runDebugSimulatorHandler);
 				}else{
-					editor.handleRun(false, editor.presentDebugSimulatorHandler, editor.runDebugSimulatorHandler);	
+					editor.handleRun(false, editor.presentDebugHandler, editor.runDebugHandler);	
 				}
 				
 			}

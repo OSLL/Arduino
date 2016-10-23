@@ -336,7 +336,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 	//mcus.add("atmega128");
 	//simulavrFrame.setMicrocontrollerModel(mcus);
 	//simulavrFrame.setCPUFrequency(16000000);
-	
+	/*
 	simulAvrConfigs = new SimulAVRConfigs();
 	simulAvrConfigs.setCpuFreq(16000000);
 	simulAvrConfigs.setMaxRunTime(6000000);
@@ -347,7 +347,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 	LinkedHashMap<String, Boolean> map = new LinkedHashMap<>();
 	map.put("+ PORTA.PORT", true);
 	map.put("+ PORTA.PIN", true);
-	simulAvrConfigs.setVcdSources(map);
+	simulAvrConfigs.setVcdSources(map);*/
     
     //--------------------   
 
@@ -468,6 +468,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
    * @return true if config succesfuly loaded */
   boolean loadSimulatorInitConfig(){
 	  simulAvrInitData = communicator.getSimulAvrInitData();
+	  simulavrFrame.initFrame(simulAvrInitData);
 	  if(simulAvrInitData == null)
 		  return false;
 	  return true;
@@ -2081,7 +2082,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 				File hexFile = new File(hexPath);
 				System.out.println(" hexFile.exist() " + hexFile.exists());
 				System.out.println(" hexFile.length() " + hexFile.length());
-				int res = communicator.loadAndRunSimulator(new File(elfPath), debugKey, sketchController.getSketch().getFolder().getAbsolutePath() + "/", simulAvrConfigs);
+				int res = communicator.loadAndRunSimulator(new File(elfPath), debugKey, sketchController.getSketch().getFolder().getAbsolutePath() + "/", simulavrFrame.getConfigs());
 				if (res > 0) {
 					System.out.println("Download OK\n");
 					avaricePort = res;

@@ -9,17 +9,17 @@ import java.util.List;
 /**
  * Created by Ploskov Aleksandr
  */
-class VCDConfigFrame extends JFrame {
+public class VCDConfigFrame extends JFrame {
   private Map<String, Panel> configMap;
 
-  VCDConfigFrame() {
+  public VCDConfigFrame() {
     super("Источники для VCD трассировки");
 
     setLayout(new GridLayout(0, 1));
     configMap = new HashMap<>();
   }
 
-  void initElements(List<String> names) {
+  public void initElements(List<String> names) {
     for (String name : names) {
       Panel newPanel = new Panel(name, false);
       configMap.put(name, newPanel);
@@ -29,7 +29,7 @@ class VCDConfigFrame extends JFrame {
     pack();
   }
 
-  Map<String, Boolean> getElements() {
+  public Map<String, Boolean> getElements() {
     Map<String, Boolean> newMap = new HashMap<>(configMap.size());
 
     for (String name : configMap.keySet()) {

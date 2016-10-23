@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by Ploskov Aleksandr
  */
-class SimulAVRConfigFrame extends JFrame {
+public class SimulAVRConfigFrame extends JFrame {
   private final int PREFERRED_WIDTH;
 
   private final JComboBox<String> microcontrollerModel;
@@ -31,7 +31,7 @@ class SimulAVRConfigFrame extends JFrame {
   private Map<String, ArrayList<String>> vcdConfigs;
   private SimulAVRConfigs configs;
 
-  SimulAVRConfigFrame() {
+  public SimulAVRConfigFrame() {
     super("Конфигурация SimulAVR");
 
     configs = null;
