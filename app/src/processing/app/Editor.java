@@ -468,9 +468,9 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
    * @return true if config succesfuly loaded */
   boolean loadSimulatorInitConfig(){
 	  simulAvrInitData = communicator.getSimulAvrInitData();
-	  simulavrFrame.initFrame(simulAvrInitData);
 	  if(simulAvrInitData == null)
 		  return false;
+	  simulavrFrame.initFrame(simulAvrInitData);
 	  return true;
   }
   
