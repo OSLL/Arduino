@@ -53,16 +53,26 @@ public class DebugServerCommunicator {
 	}
 
 	public int loadAndRunSimulator(File file, String key, final String resultStoragePath,SimulAVRConfigs configs){
-//		Message message = null;
+		Message message = null;
 		try {		
 			final Socket s = new Socket(address, port);
-			Messenger.writeMessage(s, new Message("LOAD_SIMUL"));
+			Messenger.writeMessage(s, new Message("SIMUL"));
+			Messenger.writeMessage(s, new Message(key));
+			message = Messenger.readMessage(s);
+			if(!message.getText().equals("OK")){
+				return -2;
+			}
+			System.out.println("Send START");
+			Messenger.writeMessage(s, new Message("START"));
 			Messenger.writeSimulAVRConfigs(s, configs);
 			sendFile(s, file);
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
+						File file = new File(resultStoragePath + "simulAVR-vcd-output");
+						if(file.exists())
+							file.delete();
 						loadFile(s, resultStoragePath + "simulAVR-vcd-output");
 						s.close();
 						event.resultReceived();
@@ -80,7 +90,24 @@ public class DebugServerCommunicator {
 //			return message.getParameter();
 //		else return -2;
 		return 0;
-	}	
+	}
+	
+	public int stopSimulator(String key){
+		Message message = null;
+		try {		
+			final Socket s = new Socket(address, port);
+			Messenger.writeMessage(s, new Message("SIMUL"));
+			Messenger.writeMessage(s, new Message(key));
+			message = Messenger.readMessage(s);
+			if(!message.getText().equals("OK")){
+				return -2;
+			}
+			Messenger.writeMessage(s, new Message("STOP"));
+		} catch (IOException e) {
+			return -1;
+		}
+		return 0;		
+	}
 	
 	public SimulAVRInitData getSimulAvrInitData(){
 		SimulAVRInitData result = null;

@@ -159,6 +159,12 @@ public class Preferences extends javax.swing.JDialog {
     javax.swing.JPanel jPanel3 = new javax.swing.JPanel();
     javax.swing.JButton okButton = new javax.swing.JButton();
     javax.swing.JButton cancelButton = new javax.swing.JButton();
+    //pro100kot
+    jPanelDebug = new javax.swing.JPanel();
+    debugServerAddress = new JTextField();
+    debugServerPort = new JTextField();
+    jPanelDebug.setLayout(new javax.swing.BoxLayout(jPanelDebug, javax.swing.BoxLayout.Y_AXIS));
+    //---------
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle(tr("Preferences"));
@@ -536,6 +542,13 @@ public class Preferences extends javax.swing.JDialog {
 
     jTabbedPane1.addTab(tr("Network"), jPanel4);
 
+    //pro100kot
+    jPanelDebug.add(createTextFieldPair("Server address",debugServerAddress));
+    jPanelDebug.add(createTextFieldPair("Server port",debugServerPort));
+    jTabbedPane1.addTab("Debug", jPanelDebug);
+    //---------
+    
+    
     jPanel2.add(jTabbedPane1);
 
     okButton.setText(I18n.PROMPT_OK);
@@ -593,6 +606,20 @@ public class Preferences extends javax.swing.JDialog {
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
+  //pro100kot
+	private JPanel createTextFieldPair(String s, JComponent field) {
+		JPanel panel = new JPanel();
+		JLabel label = new JLabel(s);
+		label.setFocusable(false);
+		label.setMaximumSize(new Dimension(120, 35));
+		field.setMaximumSize(new Dimension(field.getMaximumSize().width, 35));
+		panel.add(label);
+		panel.add(field);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		return panel;
+	}
+	//-----------
+  
   private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
     dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
   }//GEN-LAST:event_cancelButtonActionPerformed
@@ -710,6 +737,12 @@ public class Preferences extends javax.swing.JDialog {
   private javax.swing.JCheckBox verboseCompilationBox;
   private javax.swing.JCheckBox verboseUploadBox;
   private javax.swing.JCheckBox verifyUploadBox;
+  //pro100kot
+  private javax.swing.JPanel jPanelDebug;
+  JTextField debugServerAddress;
+  JTextField debugServerPort;
+  //
+  
   // End of variables declaration//GEN-END:variables
 
   private java.util.List<String> validateData() {
@@ -789,6 +822,10 @@ public class Preferences extends javax.swing.JDialog {
     PreferencesData.set(Constants.PREF_PROXY_MANUAL_PASSWORD, String.valueOf(manualProxyPassword.getPassword()));
     PreferencesData.set(Constants.PREF_PROXY_AUTO_USERNAME, autoProxyUsername.getText());
     PreferencesData.set(Constants.PREF_PROXY_AUTO_PASSWORD, String.valueOf(autoProxyPassword.getPassword()));
+    //pro100kot
+    PreferencesData.set("debug.server.address", debugServerAddress.getText());
+    PreferencesData.setInteger("debug.server.port", Integer.parseInt(debugServerPort.getText()));
+    //--------------
   }
 
   private void showPrerefencesData() {
@@ -866,6 +903,8 @@ public class Preferences extends javax.swing.JDialog {
     String selectedManualProxyType = PreferencesData.get(Constants.PREF_PROXY_MANUAL_TYPE, Constants.PROXY_MANUAL_TYPE_HTTP);
     manualProxyHTTP.setSelected(Constants.PROXY_MANUAL_TYPE_HTTP.equals(selectedManualProxyType));
     manualProxySOCKS.setSelected(Constants.PROXY_MANUAL_TYPE_SOCKS.equals(selectedManualProxyType));
+    debugServerAddress.setText(PreferencesData.get("debug.server.address", "localhost"));
+    debugServerPort.setText(""+PreferencesData.getInteger("debug.server.port", 3129));
   }
 
   private void manualProxyFieldsSetEnabled(boolean enabled) {

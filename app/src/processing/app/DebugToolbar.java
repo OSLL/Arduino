@@ -51,7 +51,7 @@ public class DebugToolbar extends JPanel {
 		debugButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String newKey = (String) JOptionPane.showInputDialog(null, tr("Please, enter your key to debug:"), tr("Access key"), JOptionPane.INFORMATION_MESSAGE, null, null, null/*, editor.debugKey*/);
+				String newKey = (String) JOptionPane.showInputDialog(null, tr("Please, enter your key to debug:"), tr("Access key"), JOptionPane.INFORMATION_MESSAGE, null, null, editor.debugKey);
 				if(newKey == null)
 					return;
 				editor.setDebugKey(newKey);
@@ -81,8 +81,9 @@ public class DebugToolbar extends JPanel {
 		stopButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(editor.debugProcess != null)
-					editor.StopDebugSession();
+				/*if(editor.debugProcess != null)
+					editor.StopDebugSession();*/
+				editor.communicator.stopSimulator(editor.debugKey);
 			}
 		});
 		stepInButton = new JButton(new ImageIcon(Theme.getThemeImage("step_into", this, 15, 15)));
