@@ -1,13 +1,15 @@
 Arduino (IDE for AVR Virtual Lab)
 ========
-Сборка
+Сборка проекта
 ------------
-Для отладки требуется:
+[Страница Wiki проекта Arduino](https://github.com/arduino/Arduino/wiki/Building-Arduino-IDE)
+
+Требования к установленным приложениям для отладки
+------------
 * Установленный отладчик avr-gdb
 * Установленная утилита GTKWave
 
 ```bash
     apt-get install gdb-avr gtkwave
 ```
-Сборка самого проекта:<br>
-[Страница Wiki проекта Arduino](https://github.com/arduino/Arduino/wiki/Building-Arduino-IDE)
+
