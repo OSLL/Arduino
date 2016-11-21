@@ -52,6 +52,11 @@ public class DebugServerCommunicator {
 		else return -2;
 	}
 
+	public void setAddressPort(String address, int port){
+		this.address = address;
+		this.port = port;		
+	}
+	
 	public int loadAndRunSimulator(File file, String key, final String resultStoragePath,SimulAVRConfigs configs){
 		Message message = null;
 		try {		
@@ -66,6 +71,7 @@ public class DebugServerCommunicator {
 			Messenger.writeMessage(s, new Message("START"));
 			Messenger.writeSimulAVRConfigs(s, configs);
 			sendFile(s, file);
+			
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -80,16 +86,22 @@ public class DebugServerCommunicator {
 					}		
 				}
 			});
-			thread.start();
-//			message = Messenger.readMessage(s);
+			
+			message = Messenger.readMessage(s);
+			if(message == null)
+				return -3;
+			if(message.getText().equals("OK")){
+				if(configs.isVCDTraceEnable())
+					thread.start();
+				return message.getParameter();
+			}
+			else
+				return -2;
 			
 		} catch (IOException e) {
 			return -1;
 		}
-//		if(message.getText().equals("OK"))
-//			return message.getParameter();
-//		else return -2;
-		return 0;
+
 	}
 	
 	public int stopSimulator(String key){
@@ -135,15 +147,17 @@ public class DebugServerCommunicator {
 	}
 	
 	private void loadFile(Socket s, String filename) throws IOException{
-		System.out.println("Loading file");
+		System.out.println("Loading file from server");
 		InputStream inputStream = s.getInputStream();
 		DataInputStream dis = new DataInputStream(inputStream);
 			long size = dis.readLong();
+			System.out.println("File size to receive: " + size);
 			RandomAccessFile file = new RandomAccessFile(filename, "rw");
 			for(long i=0; i<size; i++){
 				file.writeByte(dis.readByte());
 			}
 			file.close();
+		System.out.println("File loaded successfuly");
 	}
 	
 }

@@ -14,8 +14,8 @@ public class DebugToolbar extends JPanel {
 	Editor editor;
 	/** Titles for each button when the shift key is pressed. */ 
 	static final String titleShift[] = {
-		tr("Start debug"), tr("Continue"), tr("Stop"), tr("Step Into"), tr("Step Over"),
-		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration"), tr("Open GTKWave"), tr("Open SimulAVR config") 
+		tr("Start debug"), tr("Start simulation"), tr("Stop"), tr("Step Into"), tr("Step Over"),
+		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration"), tr("Open GTKWave"), tr("Open SimulAVR config"), tr("Start simulator"), tr("Stop simulator") 
 	};	
 	static final int DEBUG     = 0;
 	static final int CONTINUE  = 1;
@@ -28,6 +28,8 @@ public class DebugToolbar extends JPanel {
 	static final int REGISTR  = 8;
 	static final int GTKWAVE  = 9;
 	static final int SIMULAVR  = 9;
+	static final int STARTSIMUL  = 10;
+	static final int STOPSIMUL  = 11;
 	private JButton debugButton;
 	private JButton continueButton;
 	private JButton stopButton;
@@ -39,13 +41,14 @@ public class DebugToolbar extends JPanel {
 	private JButton registrationButton;
 	private JButton GtkWaveButton;
 	private JButton simulAvrConfigButton;
+	private JButton startSimulButton;
+	private JButton stopSimulButton;
 	private JCheckBox useSimulatorChekBox;
 	GtkWave gtk;
 		
 	public DebugToolbar(Editor _editor) {
 		editor = _editor;
-		this.setSize(getWidth(), 30);
-		this.setMaximumSize(new Dimension(1080, 30));
+		this.setPreferredSize(new Dimension(800, 40));
 		debugButton = new JButton(new ImageIcon(Theme.getThemeImage("bug", this, 15, 15)));
 		debugButton.setToolTipText(titleShift[DEBUG]);
 		debugButton.addActionListener(new ActionListener() {
@@ -81,9 +84,9 @@ public class DebugToolbar extends JPanel {
 		stopButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				/*if(editor.debugProcess != null)
-					editor.StopDebugSession();*/
-				editor.communicator.stopSimulator(editor.debugKey);
+				if(editor.debugProcess != null)
+					editor.StopDebugSession();
+			//TODO а завершается ли симулятор при завершении отладочной сессии??	
 			}
 		});
 		stepInButton = new JButton(new ImageIcon(Theme.getThemeImage("step_into", this, 15, 15)));
@@ -148,13 +151,14 @@ public class DebugToolbar extends JPanel {
 					System.out.println("Trying load simulator configs");
 					if(editor.loadSimulatorInitConfig()){
 						System.out.println("Configs successfuly loaded");
-						simulAvrConfigButton.setEnabled(true);
+						simulatorSelectedEvent();
 						return;
 					}
 					System.err.println("Unable to load simulator configs");
 					chb.setSelected(false);
 				}else{
-					simulAvrConfigButton.setEnabled(false);
+					editor.communicator.stopSimulator(editor.debugKey);
+					simulatorDeselectedEvent();
 				}
 			}
 		});
@@ -177,22 +181,95 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		
+		startSimulButton = new JButton(tr("Start sim"));
+		startSimulButton.setToolTipText(titleShift[STARTSIMUL]);
+		startSimulButton.setEnabled(false);
+		startSimulButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String newKey = (String) JOptionPane.showInputDialog(null, tr("Please, enter your key to debug:"), tr("Access key"), JOptionPane.INFORMATION_MESSAGE, null, null, editor.debugKey);
+				if(newKey == null){
+					System.err.println("You must enter the key");
+					return;
+				}
+				editor.setDebugKey(newKey);
+				if(useSimulatorChekBox.isSelected()){
+					if(editor.simulavrFrame.getConfigs()== null){
+						System.err.println("Configure simulator first");
+						return;
+					}
+					editor.handleRun(false, editor.presentDebugSimulatorHandler, editor.runDebugSimulatorHandler);
+					simulatorStartedEvent();
+				}
+			}
+		});
 		
-		add(debugButton);
+		stopSimulButton = new JButton(tr("Stop sim"));
+		stopSimulButton.setToolTipText(titleShift[STOPSIMUL]);
+		stopSimulButton.setEnabled(false);
+		stopSimulButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(editor.debugProcess != null)
+					editor.StopDebugSession();
+				editor.communicator.stopSimulator(editor.debugKey);
+				simulatorStopedEvent();
+			}
+		});
+		
+		setLayout(new FlowLayout());
+		//add(debugButton);
 		add(continueButton);
-		add(stopButton);
+		//add(stopButton);
 		add(stepInButton);
 		add(stepOverButton);
 		add(stepOutButton);
 		add(breakpointButton);
 		add(varListButton);
+		//add(Box.createHorizontalGlue());
+		//add(registrationButton);
 		add(Box.createHorizontalGlue());
-		add(registrationButton);
+		add(startSimulButton);
+		add(stopSimulButton);
 		add(Box.createHorizontalGlue());
 		add(useSimulatorChekBox);
 		add(Box.createHorizontalGlue());
 		add(GtkWaveButton);
 		add(simulAvrConfigButton);
+		debugButtonsEnable(false);
+	}
+	
+	public void debugButtonsEnable(boolean flag){
+		continueButton.setEnabled(flag);
+		stopButton.setEnabled(flag);
+		stepInButton.setEnabled(flag);
+		stepOverButton.setEnabled(flag);
+		stepOutButton.setEnabled(flag);
+		//breakpointButton.setEnabled(flag);
+		varListButton.setEnabled(flag);
+	}
+	
+	public void simulatorStartedEvent(){
+		stopSimulButton.setEnabled(true);
+		debugButtonsEnable(true);
+		//show debug buttons 
+	}
+	
+	public void simulatorStopedEvent(){
+		stopSimulButton.setEnabled(false);
+		debugButtonsEnable(false);
+		//hide debug buttons
+	}
+	
+	public void simulatorSelectedEvent(){
+		simulAvrConfigButton.setEnabled(true);
+		startSimulButton.setEnabled(true);
+	}
+	
+	public void simulatorDeselectedEvent(){
+		simulAvrConfigButton.setEnabled(false);
+		startSimulButton.setEnabled(false);
+		stopSimulButton.setEnabled(false);
 	}
 	
 	public void targetIsRunning(){
@@ -211,4 +288,6 @@ public class DebugToolbar extends JPanel {
 		stepOutButton.setEnabled(true);
 		breakpointButton.setEnabled(true);
 	}
+	
+	
 }

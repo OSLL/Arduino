@@ -123,6 +123,7 @@ public class GdbDebugProcess implements GdbListener, BreakpointListener{
 	public void stop()
 	{
 		m_gdb.sendCommand("-gdb-exit");
+		//m_gdb.sendCommand("quit");
 	}	
 	
 	@Override

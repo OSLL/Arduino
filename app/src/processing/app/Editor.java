@@ -427,6 +427,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 //pro100kot--------------------
   
   public void resultReceived(){
+	  debugToolbar.simulatorStopedEvent();
 	  gtkwave = new GtkWave(sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "simulAVR-vcd-output");
 	  gtkwave.start(); 
   }
@@ -467,12 +468,20 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
   /**
    * @return true if config succesfuly loaded */
   boolean loadSimulatorInitConfig(){
+	  communicator.setAddressPort(PreferencesData.get("debug.server.address", "localhost"),
+			PreferencesData.getInteger("debug.server.port", 3129));
 	  simulAvrInitData = communicator.getSimulAvrInitData();
 	  if(simulAvrInitData == null)
 		  return false;
 	  simulavrFrame.initFrame(simulAvrInitData);
 	  return true;
   }
+
+  int stopSimulator(){
+	  communicator.setAddressPort(PreferencesData.get("debug.server.address", "localhost"),
+			PreferencesData.getInteger("debug.server.port", 3129));
+	  return communicator.stopSimulator(debugKey);
+  }  
   
   //--------------------
   
@@ -1992,13 +2001,19 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 			File hexFile = new File(hexPath);
 			System.out.println(" hexFile.exist() " + hexFile.exists());
 			System.out.println(" hexFile.length() " + hexFile.length());
+			communicator.setAddressPort(PreferencesData.get("debug.server.address", "localhost"),
+			PreferencesData.getInteger("debug.server.port", 3129));
 			int res = communicator.loadAndRun(new File(hexPath), debugKey);
+			if(res == 0){
+				System.out.println("Upload OK\n");
+				return;
+			}
 			if (res > 0) {
-				System.out.println("Download OK\n");
+				System.out.println("Upload OK\n");
 				avaricePort = res;
 				startDebugSession(elfPath);
 			} else {
-				System.out.println("Download Error: \n");
+				System.out.println("Upload Error: \n");
 				return;
 			}
 		}
@@ -2082,13 +2097,19 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 				File hexFile = new File(hexPath);
 				System.out.println(" hexFile.exist() " + hexFile.exists());
 				System.out.println(" hexFile.length() " + hexFile.length());
+				communicator.setAddressPort(PreferencesData.get("debug.server.address", "localhost"),
+			PreferencesData.getInteger("debug.server.port", 3129));
 				int res = communicator.loadAndRunSimulator(new File(elfPath), debugKey, sketchController.getSketch().getFolder().getAbsolutePath() + "/", simulavrFrame.getConfigs());
+				if(res == 0){
+					System.out.println("Upload OK\n");
+					return;
+				}
 				if (res > 0) {
-					System.out.println("Download OK\n");
+					System.out.println("Upload OK\n");
 					avaricePort = res;
 					startDebugSession(elfPath);
 				} else {
-					System.out.println("Download Error:" + res + " \n");
+					System.out.println("Upload Error:" + res + " \n");
 					return;
 				}
 			}
