@@ -40,16 +40,16 @@ public class VCDConfigFrame extends JFrame {
 
   public Map<String, Boolean> getElements() {
     Map<String, Boolean> newMap = new HashMap<>(configMap.size());
-
     for (String name : configMap.keySet()) {
       newMap.put(name, configMap.get(name).getFlag());
     }
-
     return newMap;
   }
 
   public void setConfig(String configName, boolean flag) {
-    configMap.get(configName).setFlag(flag);
+	Panel panel = configMap.get(configName);
+	if(panel!=null)
+		panel.setFlag(flag);
   }
 
   private class Panel extends JPanel {

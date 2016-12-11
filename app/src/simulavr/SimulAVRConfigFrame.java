@@ -17,6 +17,8 @@ import java.util.Map;
  * Created by Ploskov Aleksandr
  */
 public class SimulAVRConfigFrame extends JFrame {
+  private static final long serialVersionUID = -6403161257709033802L;
+
   private final int PREFERRED_WIDTH;
 
   private final JComboBox<String> microcontrollerModel;
@@ -53,11 +55,14 @@ public class SimulAVRConfigFrame extends JFrame {
         vcdConfigFrame.setVisible(false);
         vcdConfigFrame = new VCDConfigFrame();
         vcdConfigFrame.initElements(vcdConfigs.get(microcontroller));
+        
         if (configs != null) {
-          LinkedHashMap<String, Boolean> vcdSources = configs.getVcdSources();
-          for (String config : vcdConfigs.get(microcontroller)) {
-            vcdConfigFrame.setConfig(config, vcdSources.get(config));
-          }
+        	if(configs.getSelectedMcu().equals(microcontroller)){
+                LinkedHashMap<String, Boolean> vcdSources = configs.getVcdSources();
+                for (String config : vcdConfigs.get(microcontroller)) {
+                  vcdConfigFrame.setConfig(config, vcdSources.get(config));
+                }
+        	}
         }
       }
     });
@@ -66,7 +71,7 @@ public class SimulAVRConfigFrame extends JFrame {
     cpuFrequency.setHorizontalAlignment(SwingConstants.RIGHT);
     cpuFrequency.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     cpuFrequency.setPreferredSize(preferredDimension);
-    cpuFrequency.setText(Integer.toString(0));
+    cpuFrequency.setText(Integer.toString(16000000));
 
     enableTrace = new JToggleButton("Нет");
     enableTrace.setPreferredSize(preferredDimension);
@@ -208,7 +213,12 @@ public class SimulAVRConfigFrame extends JFrame {
   public long getCPUFrequency() {
     String text = cpuFrequency.getText();
     // здесь какой то хитрый whitespace, который не подходит под регулярку \\s+
-    return Long.parseLong(text.replaceAll(" ", ""));
+    try{
+    	long value = Long.parseLong(text.replaceAll(" ", ""));
+    	return value;
+    }catch (NumberFormatException e){
+    	return 16000000L;
+    }
   }
 
   public void setCPUFrequency(long frequency) {
@@ -234,7 +244,12 @@ public class SimulAVRConfigFrame extends JFrame {
   public long getMaxRunTime() {
     String text = maxRunTime.getText();
     // здесь какой то хитрый whitespace, который не подходит под регулярку \\s+
-    return Long.parseLong(text.replaceAll(" ", ""));
+    try{
+    	long value = Long.parseLong(text.replaceAll(" ", ""));
+    	return value;
+    }catch (NumberFormatException e){
+    	return 0;
+    }
   }
 
   public void setMaxRunTime(long nanoseconds) {

@@ -459,8 +459,10 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
   void StopDebugSession(){
 	  	tracingHandler.deselectAllLines();
 		//bad solution
-	  	debugProcess.stop();
-		debugProcess = null;
+	  	if(debugProcess != null){
+	  		debugProcess.stop();
+			debugProcess = null;	
+	  	}
 		//
 		varFrame.clear();
   }
@@ -2110,6 +2112,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 					startDebugSession(elfPath);
 				} else {
 					System.out.println("Upload Error:" + res + " \n");
+					debugToolbar.simulatorStopedEvent();
 					return;
 				}
 			}

@@ -26,28 +26,28 @@ public class DebugServerCommunicator {
 		this.event = event;
 	}
 	
-	public int loadAndRun(File file, String key){
+	public int loadAndRun(File file, String token){
 		Message message = null;
 		try {		
 			Socket s = new Socket(address, port);
-			Messenger.writeMessage(s, new Message("LOAD"));
-			Messenger.writeMessage(s, new Message(key));
+			Messenger.writeMessage(s, new Message("DEBUG_MCU"));
+			Messenger.writeMessage(s, new Message(token));
 			message = Messenger.readMessage(s);
-			switch (message.getText()) {
-			case "ACCESS_ERROR":
-				System.out.println("Access error");
-				return -4;
+			if(message == null){
+				return -1;
 			}
-			if(!message.getText().equals("OK")){
-				return -3;
+			if(message.getParameter()<0){
+				System.err.println(message.getText());
+				return message.getParameter();
 			}
+			System.out.println("Sending file");
 			sendFile(s, file);
 			message = Messenger.readMessage(s);
 			s.close();
 		} catch (IOException e) {
 			return -1;
 		}
-		if(message.getText().equals("OK"))
+		if("OK".equals(message.getText()))
 			return message.getParameter();
 		else return -2;
 	}
@@ -57,18 +57,36 @@ public class DebugServerCommunicator {
 		this.port = port;		
 	}
 	
-	public int loadAndRunSimulator(File file, String key, final String resultStoragePath,SimulAVRConfigs configs){
+	public int loadAndRunSimulator(File file, String token, final String resultStoragePath,SimulAVRConfigs configs){
 		Message message = null;
 		try {		
 			final Socket s = new Socket(address, port);
-			Messenger.writeMessage(s, new Message("SIMUL"));
-			Messenger.writeMessage(s, new Message(key));
+			Messenger.writeMessage(s, new Message("DEBUG_SIMUL"));
+			Messenger.writeMessage(s, new Message(token));
 			message = Messenger.readMessage(s);
-			if(!message.getText().equals("OK")){
-				return -2;
+			
+			if(message == null){
+				return -1;
 			}
+			if(message.getParameter()<0){
+				System.err.println(message.getText());
+				return message.getParameter();
+			}
+			
 			System.out.println("Send START");
 			Messenger.writeMessage(s, new Message("START"));
+			
+			message = Messenger.readMessage(s);
+			
+			if(message == null){
+				return -11;
+			}
+			if(message.getParameter()<0){
+				System.err.println(message.getText());
+				return message.getParameter();
+			}
+			
+			
 			Messenger.writeSimulAVRConfigs(s, configs);
 			sendFile(s, file);
 			
@@ -86,7 +104,7 @@ public class DebugServerCommunicator {
 					}		
 				}
 			});
-			
+
 			message = Messenger.readMessage(s);
 			if(message == null)
 				return -3;
@@ -104,16 +122,22 @@ public class DebugServerCommunicator {
 
 	}
 	
-	public int stopSimulator(String key){
+	public int stopSimulator(String token){
 		Message message = null;
 		try {		
 			final Socket s = new Socket(address, port);
-			Messenger.writeMessage(s, new Message("SIMUL"));
-			Messenger.writeMessage(s, new Message(key));
+			Messenger.writeMessage(s, new Message("DEBUG_SIMUL"));
+			Messenger.writeMessage(s, new Message(token));
 			message = Messenger.readMessage(s);
-			if(!message.getText().equals("OK")){
-				return -2;
+			
+			if(message == null){
+				return -1;
 			}
+			if(message.getParameter()<0){
+				System.err.println(message.getText());
+				return message.getParameter();
+			}
+			
 			Messenger.writeMessage(s, new Message("STOP"));
 		} catch (IOException e) {
 			return -1;
