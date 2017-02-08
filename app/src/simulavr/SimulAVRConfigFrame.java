@@ -28,16 +28,18 @@ public class SimulAVRConfigFrame extends JFrame {
   private final JFormattedTextField maxRunTime;
   private final JToggleButton enableVCDTrace;
   private final JButton openVCDConfigFrame;
-
+  private final SimulAVRConfigs defaultConfigs;
+  
   private VCDConfigFrame vcdConfigFrame;
   private Map<String, ArrayList<String>> vcdConfigs;
   private SimulAVRConfigs configs;
 
-  public SimulAVRConfigFrame() {
+  public SimulAVRConfigFrame(SimulAVRConfigs defaultConfigs) {
     super("Конфигурация SimulAVR");
 
+    this.defaultConfigs = defaultConfigs;
     configs = null;
-
+    
     PREFERRED_WIDTH = 640;
     Dimension preferredDimension = new Dimension(PREFERRED_WIDTH / 3, 30);
 
@@ -71,19 +73,20 @@ public class SimulAVRConfigFrame extends JFrame {
     cpuFrequency.setHorizontalAlignment(SwingConstants.RIGHT);
     cpuFrequency.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     cpuFrequency.setPreferredSize(preferredDimension);
-    cpuFrequency.setText(Integer.toString(16000000));
+    cpuFrequency.setText(Long.toString(defaultConfigs.getCpuFreq()));
 
     enableTrace = new JToggleButton("Нет");
     enableTrace.setPreferredSize(preferredDimension);
 
     enableDebug = new JToggleButton("Нет");
     enableDebug.setPreferredSize(preferredDimension);
+    enableDebug.setEnabled(defaultConfigs.isDebugEnable());
 
     maxRunTime = new JFormattedTextField(numberFormatter);
     maxRunTime.setHorizontalAlignment(SwingConstants.RIGHT);
     maxRunTime.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     maxRunTime.setPreferredSize(preferredDimension);
-    maxRunTime.setText(Integer.toString(0));
+    maxRunTime.setText(Long.toString(defaultConfigs.getMaxRunTime()));
 
     enableVCDTrace = new JToggleButton("Нет");
     enableVCDTrace.setPreferredSize(preferredDimension);
@@ -146,7 +149,7 @@ public class SimulAVRConfigFrame extends JFrame {
         }
       }
     });
-    add(enableTracePanel);
+    //add(enableTracePanel);
 
     JPanel enableDebugPanel = new JPanel();
     enableDebugPanel.setLayout(new BorderLayout());
@@ -278,22 +281,22 @@ public class SimulAVRConfigFrame extends JFrame {
 
     initVCDConfig(data);
     setMicrocontrollerList(microcontrollers);
+    setMicrocontrollerModel(defaultConfigs.getSelectedMcu());
     addWindowListener(new WindowAdapter() {
-      @Override
-      public void windowClosing(WindowEvent e) {
-        int dialogResult = JOptionPane.showConfirmDialog(null,
-          "Would you like to save configs?",
-          "Warning",
-          JOptionPane.YES_NO_OPTION);
+        @Override
+        public void windowClosing(WindowEvent e) {
+          int dialogResult = JOptionPane.showConfirmDialog(null,
+            "Would you like to save configs?",
+            "Warning",
+            JOptionPane.YES_NO_OPTION);
 
-        if (dialogResult == JOptionPane.YES_OPTION) {
-          saveData();
+          if (dialogResult == JOptionPane.YES_OPTION) {
+            saveData();
+          }
+          super.windowClosing(e);
         }
-        super.windowClosing(e);
-      }
-    });
-
-    setVisible(true);
+      });
+    //setVisible(true);
   }
 
   private void saveData() {
@@ -322,11 +325,12 @@ public class SimulAVRConfigFrame extends JFrame {
       setEnableTrace(configs.isTraceEnable());
       setEnableVCDTrace(configs.isVCDTraceEnable());
     } else {
-      setCPUFrequency(0);
-      setEnableDebug(false);
-      setMaxRunTime(0);
-      setEnableTrace(false);
-      setEnableVCDTrace(false);
+      setMicrocontrollerModel(defaultConfigs.getSelectedMcu());
+      setCPUFrequency(defaultConfigs.getCpuFreq());
+      setEnableDebug(defaultConfigs.isDebugEnable());
+      setMaxRunTime(defaultConfigs.getMaxRunTime());
+      setEnableTrace(defaultConfigs.isTraceEnable());
+      setEnableVCDTrace(defaultConfigs.isVCDTraceEnable());
     }
     super.setVisible(b);
   }

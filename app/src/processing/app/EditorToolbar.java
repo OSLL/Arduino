@@ -25,6 +25,9 @@ package processing.app;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
+
+import gtkwave.GtkWave;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -41,14 +44,14 @@ public class EditorToolbar extends JComponent implements MouseInputListener, Key
    * Rollover titles for each button.
    */
   private static final String[] title = {
-    tr("Verify"), tr("Upload"), tr("New"), tr("Open"), tr("Save"), tr("Serial Monitor")
+    tr("Verify"), tr("Upload"), tr("New"), tr("Open"), tr("Save"), tr("Open GTKWave"), tr("Serial Monitor")
   };
 
   /**
    * Titles for each button when the shift key is pressed.
    */
   private static final String[] titleShift = {
-    tr("Verify"), tr("Upload Using Programmer"), tr("New"), tr("Open"), tr("Save As..."), tr("Serial Monitor")
+    tr("Verify"), tr("Upload Using Programmer"), tr("New"), tr("Open"), tr("Save As..."), tr("Open GTKWave"), tr("Serial Monitor")
   };
 
   private static final int BUTTON_COUNT = title.length;
@@ -76,8 +79,11 @@ public class EditorToolbar extends JComponent implements MouseInputListener, Key
   private static final int NEW = 2;
   private static final int OPEN = 3;
   private static final int SAVE = 4;
-
-  private static final int SERIAL = 5;
+  
+  private static final int GTKWAVE = 5;
+  
+  private static final int SERIAL = 6;
+  
 
   private static final int INACTIVE = 0;
   private static final int ROLLOVER = 1;
@@ -111,6 +117,8 @@ public class EditorToolbar extends JComponent implements MouseInputListener, Key
   private final Color statusColor;
 
   private boolean shiftPressed;
+  
+  GtkWave gtk;
 
   public EditorToolbar(Editor editor, JMenu menu) {
     this.editor = editor;
@@ -126,6 +134,8 @@ public class EditorToolbar extends JComponent implements MouseInputListener, Key
     which[buttonCount++] = OPEN;
     which[buttonCount++] = SAVE;
     which[buttonCount++] = SERIAL;
+    
+    which[buttonCount++] = GTKWAVE;
 
     currentRollover = -1;
 
@@ -188,7 +198,7 @@ public class EditorToolbar extends JComponent implements MouseInputListener, Key
       int offsetX = 3;
       for (int i = 0; i < buttonCount; i++) {
         x1[i] = offsetX;
-        if (i == 2 || i == 6) x1[i] += BUTTON_GAP;
+        if (i == 2 || i == 6 || i==5) x1[i] += BUTTON_GAP;
         x2[i] = x1[i] + BUTTON_WIDTH;
         offsetX = x2[i];
       }
@@ -382,6 +392,11 @@ public class EditorToolbar extends JComponent implements MouseInputListener, Key
 
       case SERIAL:
         editor.handleSerial();
+        break;
+        
+      case GTKWAVE:
+		gtk = new GtkWave(editor.sketchController.getSketch().getFolder().getAbsolutePath() + "/" + "simulAVR-vcd-output");
+		gtk.start();
         break;
     }
   }

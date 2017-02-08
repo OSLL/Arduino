@@ -58,7 +58,7 @@ public class GtkWave extends Thread {
             return;
         } catch (IOException e) {
             System.out.println("GtkWave error: " + e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
             return;
         }
 

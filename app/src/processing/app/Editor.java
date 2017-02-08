@@ -32,6 +32,8 @@ import cc.arduino.packages.uploaders.SerialUploader;
 import cc.arduino.view.GoToLineNumber;
 import cc.arduino.view.StubMenuListener;
 import cc.arduino.view.findreplace.FindReplace;
+
+import com.apple.eawt.event.GestureUtilities;
 import com.jcraft.jsch.JSchException;
 
 import gdbremoteserver.DebugServerCommunicator;
@@ -154,6 +156,7 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
   // file, sketch, and tools menus for re-inserting items
   private JMenu fileMenu;
   private JMenu toolsMenu;
+  private JMenu debugMenu;
 
   private int numTools = 0;
 
@@ -242,10 +245,32 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
   String debugKey = null;
   GtkWave gtkwave = null;
   
+  private boolean useSimulator = true;
+
+  public boolean isUseSimulator() {
+	return useSimulator;
+}
+
+  public void setUseSimulator(boolean useSimulator) {
+	if(useSimulator){
+		if(!loadSimulatorInitConfig()){
+			System.err.println("Error while loading simulator configs");
+		}
+		lineStatus.setTargetType("Simulator");
+		
+	}
+		
+	else
+		lineStatus.setTargetType("MCU");
+	lineStatus.repaint();
+	this.useSimulator = useSimulator;
+  }
   
   //--------------------
   
-  public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation, Platform platform) throws Exception {
+
+
+public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation, Platform platform) throws Exception {
     super("Arduino");
     this.base = ibase;
     this.platform = platform;
@@ -323,7 +348,16 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
     varFrame = new VarTableFrame();
     registrationFrame = new RegistrationFrame(this);
     breakpointIco = new ImageIcon(Theme.getThemeImage("breakpoint", this, 15, 15));
-    simulavrFrame = new SimulAVRConfigFrame();
+    
+    SimulAVRConfigs defaultConfigs = new SimulAVRConfigs();
+    defaultConfigs.setCpuFreq(16000000L);
+    defaultConfigs.setDebugEnable(true);
+    defaultConfigs.setMaxRunTime(6000000);
+    defaultConfigs.setSelectedMcu("atmega128");
+    defaultConfigs.setVCDTraceEnable(false);
+    defaultConfigs.setVcdSources(new LinkedHashMap<String,Boolean>());
+    
+    simulavrFrame = new SimulAVRConfigFrame(defaultConfigs);
     communicator = new DebugServerCommunicator(
 			PreferencesData.get("debug.server.address", "localhost"),
 			PreferencesData.getInteger("debug.server.port", 3129), this);
@@ -369,7 +403,12 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 
     lineStatus = new EditorLineStatus();
     consolePanel.add(lineStatus, BorderLayout.SOUTH);
-
+    //pro100kot
+    // crutch :-/
+    setUseSimulator(isUseSimulator());
+    //
+    
+    
     codePanel = new JPanel(new BorderLayout());
     upper.add(codePanel);
 
@@ -663,6 +702,9 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
     });
     menubar.add(toolsMenu);
 
+    debugMenu = buildDebugMenu();
+    menubar.add(debugMenu);
+    
     menubar.add(buildHelpMenu());
     setJMenuBar(menubar);
   }
@@ -956,7 +998,62 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
     return toolsMenu;
   }
 
+  //pro100kot=============================================================================
+  private JMenu buildDebugMenu(){
+	    debugMenu = new JMenu(tr("Debug"));
+	    debugMenu.setMnemonic(KeyEvent.VK_D);
+	    JMenuItem item = new JMenuItem(tr("Simulator configs"));
+	    debugMenu.add(item);
+	    
+	    item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(simulAvrInitData == null){
+					if(!loadSimulatorInitConfig()){
+						System.err.println("Error while loading simulator configs");
+					}
+					else
+						simulavrFrame.setVisible(true);
+				}
+				else
+					simulavrFrame.setVisible(true);
+			}
+		});
 
+	    
+	    JMenu targetMenu = new JMenu(tr("Target"));
+	    
+	    final ButtonGroup group = new ButtonGroup();
+    
+	    JRadioButtonMenuItem simul = new JRadioButtonMenuItem(tr("Simulator"));
+	    simul.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setUseSimulator(true);
+			}
+		});
+	    simul.setSelected(isUseSimulator());
+	    targetMenu.add(simul);
+	    group.add(simul);
+	    
+	    JRadioButtonMenuItem mcu = new JRadioButtonMenuItem("MCU");
+	    mcu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setUseSimulator(false);
+			}
+		});
+	    mcu.setSelected(!isUseSimulator());
+	    targetMenu.add(mcu);
+	    group.add(mcu);
+	    
+	    debugMenu.add(targetMenu);
+	    return debugMenu;
+  }
+  
+//=============================================================================
+  
+  
   private void addTools(JMenu menu, File sourceFolder) {
     if (sourceFolder == null)
       return;

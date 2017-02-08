@@ -53,8 +53,10 @@ public class EditorLineStatus extends JComponent {
   String name = "";
   String serialport = "";
   String serialnumber = "";
+  String targetType = "";
 
-  public EditorLineStatus() {
+
+public EditorLineStatus() {
     background = Theme.getColor("linestatus.bgcolor");
     font = Theme.getFont("linestatus.font");
     foreground = Theme.getColor("linestatus.color");
@@ -110,7 +112,7 @@ public class EditorLineStatus extends JComponent {
     g.drawString(text, scale(6), baseline);
 
     g.setColor(messageForeground);
-    String tmp = I18n.format(tr("{0} on {1}"), name, serialport);
+    String tmp = I18n.format(tr("{0} ({2})"), name, serialport, targetType);
     
     Rectangle2D bounds = g.getFontMetrics().getStringBounds(tmp, null);
     
@@ -133,8 +135,16 @@ public class EditorLineStatus extends JComponent {
   public void setSerialNumber(String serialnumber) {
     this.serialnumber = serialnumber;
   }
+  
+  public String getTargetType() {
+	return targetType;
+  }
 
-  public Dimension getPreferredSize() {
+  public void setTargetType(String targetType) {
+	this.targetType = targetType;
+  }
+
+	  public Dimension getPreferredSize() {
     return scale(new Dimension(300, height));
   }
 

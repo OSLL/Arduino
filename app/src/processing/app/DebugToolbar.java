@@ -39,12 +39,12 @@ public class DebugToolbar extends JPanel {
 	private JButton breakpointButton;
 	private JButton varListButton;
 	private JButton registrationButton;
-	private JButton GtkWaveButton;
-	private JButton simulAvrConfigButton;
+//	private JButton GtkWaveButton;
+//	private JButton simulAvrConfigButton;
 	private JButton startSimulButton;
 	private JButton stopSimulButton;
-	private JCheckBox useSimulatorChekBox;
-	GtkWave gtk;
+//	private JCheckBox useSimulatorChekBox;
+//	GtkWave gtk;
 		
 	public DebugToolbar(Editor _editor) {
 		editor = _editor;
@@ -58,7 +58,8 @@ public class DebugToolbar extends JPanel {
 				if(newKey == null)
 					return;
 				editor.setDebugKey(newKey);
-				if(useSimulatorChekBox.isSelected()){
+				//TODO need to write universal handle in Editor to coordinate simulator/mcu selection there
+				if(editor.isUseSimulator()){
 					if(editor.simulavrFrame.getConfigs()== null){
 						System.err.println("Configure simulator first");
 						return;
@@ -71,6 +72,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		continueButton = new JButton(new ImageIcon(Theme.getThemeImage("resume", this, 15, 15)));
+		continueButton.setContentAreaFilled(false);
+		continueButton.setPreferredSize(new Dimension(25, 25));
 		continueButton.setToolTipText(titleShift[CONTINUE]);
 		continueButton.addActionListener(new ActionListener() {
 			@Override
@@ -80,6 +83,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		stopButton = new JButton(new ImageIcon(Theme.getThemeImage("stop", this, 15, 15)));
+		stopButton.setContentAreaFilled(false);
+		stopButton.setPreferredSize(new Dimension(25, 25));
 		stopButton.setToolTipText(titleShift[STOP]);
 		stopButton.addActionListener(new ActionListener() {
 			@Override
@@ -90,6 +95,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		stepInButton = new JButton(new ImageIcon(Theme.getThemeImage("step_into", this, 15, 15)));
+		stepInButton.setContentAreaFilled(false);
+		stepInButton.setPreferredSize(new Dimension(25, 25));
 		stepInButton.setToolTipText(titleShift[STEP_IN]);
 		stepInButton.addActionListener(new ActionListener() {
 			@Override
@@ -99,6 +106,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		stepOverButton = new JButton(new ImageIcon(Theme.getThemeImage("step_over", this, 15, 15)));
+		stepOverButton.setContentAreaFilled(false);
+		stepOverButton.setPreferredSize(new Dimension(25, 25));
 		stepOverButton.setToolTipText(titleShift[STEP_OVER]);
 		stepOverButton.addActionListener(new ActionListener() {
 			@Override
@@ -108,6 +117,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		stepOutButton = new JButton(new ImageIcon(Theme.getThemeImage("step_out", this, 15, 15)));
+		stepOutButton.setContentAreaFilled(false);
+		stepOutButton.setPreferredSize(new Dimension(25, 25));
 		stepOutButton.setToolTipText(titleShift[STEP_OUT]);
 		stepOutButton.addActionListener(new ActionListener() {
 			@Override
@@ -117,6 +128,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		breakpointButton = new JButton(new ImageIcon(Theme.getThemeImage("set_unset_bp", this, 32, 15)));
+		breakpointButton.setContentAreaFilled(false);
+		breakpointButton.setPreferredSize(new Dimension(35, 25));
 		breakpointButton.setToolTipText(titleShift[SET_UNSET_BRPT]);
 		breakpointButton.addActionListener(new ActionListener() {
 			@Override
@@ -125,6 +138,8 @@ public class DebugToolbar extends JPanel {
 			}
 		});
 		varListButton = new JButton(new ImageIcon(Theme.getThemeImage("var_list", this, 15, 15)));
+		varListButton.setContentAreaFilled(false);
+		varListButton.setPreferredSize(new Dimension(25, 25));
 		varListButton.setToolTipText(titleShift[VAR_LIST]);
 		varListButton.addActionListener(new ActionListener() {
 			@Override
@@ -142,7 +157,8 @@ public class DebugToolbar extends JPanel {
 					editor.registrationFrame.setVisible(true);
 			}
 		});
-		useSimulatorChekBox = new JCheckBox(tr("Use SimulAVR"), false);
+/*		
+ * 		useSimulatorChekBox = new JCheckBox(tr("Use SimulAVR"), false);
 		useSimulatorChekBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -171,6 +187,7 @@ public class DebugToolbar extends JPanel {
 				gtk.start();
 			}
 		});
+
 		simulAvrConfigButton = new JButton(tr("SimulAVR config"));
 		simulAvrConfigButton.setToolTipText(titleShift[SIMULAVR]);
 		simulAvrConfigButton.setEnabled(false);
@@ -180,7 +197,7 @@ public class DebugToolbar extends JPanel {
 				editor.simulavrFrame.setVisible(true);
 			}
 		});
-		
+*/		
 		startSimulButton = new JButton(tr("Start sim"));
 		startSimulButton.setToolTipText(titleShift[STARTSIMUL]);
 		startSimulButton.setEnabled(false);
@@ -193,7 +210,7 @@ public class DebugToolbar extends JPanel {
 					return;
 				}
 				editor.setDebugKey(newKey);
-				if(useSimulatorChekBox.isSelected()){
+				if(editor.isUseSimulator()){
 					if(editor.simulavrFrame.getConfigs()== null){
 						System.err.println("Configure simulator first");
 						return;
@@ -232,10 +249,10 @@ public class DebugToolbar extends JPanel {
 		add(startSimulButton);
 		add(stopSimulButton);
 		add(Box.createHorizontalGlue());
-		add(useSimulatorChekBox);
+		//add(useSimulatorChekBox);
 		add(Box.createHorizontalGlue());
-		add(GtkWaveButton);
-		add(simulAvrConfigButton);
+		//add(GtkWaveButton);
+		//add(simulAvrConfigButton);
 		debugButtonsEnable(false);
 	}
 	
@@ -262,12 +279,12 @@ public class DebugToolbar extends JPanel {
 	}
 	
 	public void simulatorSelectedEvent(){
-		simulAvrConfigButton.setEnabled(true);
+		//simulAvrConfigButton.setEnabled(true);
 		startSimulButton.setEnabled(true);
 	}
 	
 	public void simulatorDeselectedEvent(){
-		simulAvrConfigButton.setEnabled(false);
+		//simulAvrConfigButton.setEnabled(false);
 		startSimulButton.setEnabled(false);
 		stopSimulButton.setEnabled(false);
 	}
