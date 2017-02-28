@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static processing.app.I18n.tr;
+
 /**
  * Created by Ploskov Aleksandr
  */
@@ -73,20 +75,23 @@ public class SimulAVRConfigFrame extends JFrame {
     cpuFrequency.setHorizontalAlignment(SwingConstants.RIGHT);
     cpuFrequency.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     cpuFrequency.setPreferredSize(preferredDimension);
-    cpuFrequency.setText(Long.toString(defaultConfigs.getCpuFreq()));
+    //cpuFrequency.setText(Long.toString(defaultConfigs.getCpuFreq()));
+
 
     enableTrace = new JToggleButton("Нет");
     enableTrace.setPreferredSize(preferredDimension);
 
     enableDebug = new JToggleButton("Нет");
     enableDebug.setPreferredSize(preferredDimension);
-    enableDebug.setEnabled(defaultConfigs.isDebugEnable());
+    //enableDebug.setEnabled(defaultConfigs.isDebugEnable());
+
 
     maxRunTime = new JFormattedTextField(numberFormatter);
     maxRunTime.setHorizontalAlignment(SwingConstants.RIGHT);
     maxRunTime.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
     maxRunTime.setPreferredSize(preferredDimension);
-    maxRunTime.setText(Long.toString(defaultConfigs.getMaxRunTime()));
+    //maxRunTime.setText(Long.toString(defaultConfigs.getMaxRunTime()));
+
 
     enableVCDTrace = new JToggleButton("Нет");
     enableVCDTrace.setPreferredSize(preferredDimension);
@@ -114,6 +119,11 @@ public class SimulAVRConfigFrame extends JFrame {
     });
 
     //setVisible(true);
+    
+    setCPUFrequency(defaultConfigs.getCpuFreq());
+    setEnableDebug(defaultConfigs.isDebugEnable());
+    setMaxRunTime(defaultConfigs.getMaxRunTime());
+   
   }
 
   private void makeGUI() {
@@ -286,8 +296,8 @@ public class SimulAVRConfigFrame extends JFrame {
         @Override
         public void windowClosing(WindowEvent e) {
           int dialogResult = JOptionPane.showConfirmDialog(null,
-            "Would you like to save configs?",
-            "Warning",
+            tr("Would you like to save configs?"),
+            tr("Warning"),
             JOptionPane.YES_NO_OPTION);
 
           if (dialogResult == JOptionPane.YES_OPTION) {
@@ -312,6 +322,9 @@ public class SimulAVRConfigFrame extends JFrame {
   }
 
   public SimulAVRConfigs getConfigs() {
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	  saveData();
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!	  
     return configs;
   }
 

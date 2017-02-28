@@ -257,11 +257,12 @@ public class Editor extends JFrame implements RunnerListener, SimulatorResultRec
 			System.err.println("Error while loading simulator configs");
 		}
 		lineStatus.setTargetType("Simulator");
-		
+		debugToolbar.simulatorSelectedEvent();	
 	}
-		
-	else
+	else{
 		lineStatus.setTargetType("MCU");
+		debugToolbar.simulatorDeselectedEvent();
+	}
 	lineStatus.repaint();
 	this.useSimulator = useSimulator;
   }
@@ -1010,7 +1011,7 @@ public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation
 			public void actionPerformed(ActionEvent e) {
 				if(simulAvrInitData == null){
 					if(!loadSimulatorInitConfig()){
-						System.err.println("Error while loading simulator configs");
+						System.err.println(tr("Error while loading simulator configs. Check your internet connection"));
 					}
 					else
 						simulavrFrame.setVisible(true);
@@ -2085,7 +2086,7 @@ public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation
 			for (int i = 0; i < 5; i++)
 				System.out.println("\n");
 			System.out
-					.println("Starting to download sketch to remote target\n");
+					.println(tr("Starting to download sketch to remote target\n"));
 			String hexPath = "";
 			String elfPath = "";
 			try {
@@ -2096,23 +2097,23 @@ public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation
 			} catch (IOException e) {
 
 			}
-			System.out.println(" hexPath " + hexPath);
+			//System.out.println(" hexPath " + hexPath);
 			File hexFile = new File(hexPath);
-			System.out.println(" hexFile.exist() " + hexFile.exists());
-			System.out.println(" hexFile.length() " + hexFile.length());
+			//System.out.println(" hexFile.exist() " + hexFile.exists());
+			//System.out.println(" hexFile.length() " + hexFile.length());
 			communicator.setAddressPort(PreferencesData.get("debug.server.address", "localhost"),
 			PreferencesData.getInteger("debug.server.port", 3129));
 			int res = communicator.loadAndRun(new File(hexPath), debugKey);
 			if(res == 0){
-				System.out.println("Upload OK\n");
+				System.out.println(tr("Upload OK\n"));
 				return;
 			}
 			if (res > 0) {
-				System.out.println("Upload OK\n");
+				System.out.println(tr("Upload OK\n"));
 				avaricePort = res;
 				startDebugSession(elfPath);
 			} else {
-				System.out.println("Upload Error: \n");
+				System.out.println(tr("Upload Error: ")+"\n");
 				return;
 			}
 		}
@@ -2162,7 +2163,7 @@ public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation
 			@Override
 			public void run() {
 				try {
-					System.out.println("Starting to compiling your sketch\n");
+					System.out.println(tr("Starting to compiling your sketch\n"));
 					removeAllLineHighlights();
 					sketchController.build(verbose, saveHex);
 					statusNotice(tr("Done compiling."));
@@ -2181,7 +2182,7 @@ public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation
 				for (int i = 0; i < 5; i++)
 					System.out.println("\n");
 				System.out
-						.println("Starting to download sketch to remote target\n");
+						.println(tr("Starting to download sketch to remote target\n"));
 				String hexPath = "";
 				String elfPath = "";
 				try {
@@ -2200,15 +2201,15 @@ public Editor(Base ibase, File file, int[] storedLocation, int[] defaultLocation
 			PreferencesData.getInteger("debug.server.port", 3129));
 				int res = communicator.loadAndRunSimulator(new File(elfPath), debugKey, sketchController.getSketch().getFolder().getAbsolutePath() + "/", simulavrFrame.getConfigs());
 				if(res == 0){
-					System.out.println("Upload OK\n");
+					System.out.println(tr("Upload OK\n"));
 					return;
 				}
 				if (res > 0) {
-					System.out.println("Upload OK\n");
+					System.out.println(tr("Upload OK\n"));
 					avaricePort = res;
 					startDebugSession(elfPath);
 				} else {
-					System.out.println("Upload Error:" + res + " \n");
+					System.out.println(tr("Upload Error: ") + res + " \n");
 					debugToolbar.simulatorStopedEvent();
 					return;
 				}

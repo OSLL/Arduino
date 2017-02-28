@@ -543,9 +543,9 @@ public class Preferences extends javax.swing.JDialog {
     jTabbedPane1.addTab(tr("Network"), jPanel4);
 
     //pro100kot
-    jPanelDebug.add(createTextFieldPair("Server address",debugServerAddress));
-    jPanelDebug.add(createTextFieldPair("Server port",debugServerPort));
-    jTabbedPane1.addTab("Debug", jPanelDebug);
+    jPanelDebug.add(createTextFieldPair(tr("Server address"),debugServerAddress));
+    jPanelDebug.add(createTextFieldPair(tr("Server port"),debugServerPort));
+    jTabbedPane1.addTab(tr("Debug"), jPanelDebug);
     //---------
     
     

@@ -14,7 +14,7 @@ public class DebugToolbar extends JPanel {
 	Editor editor;
 	/** Titles for each button when the shift key is pressed. */ 
 	static final String titleShift[] = {
-		tr("Start debug"), tr("Start simulation"), tr("Stop"), tr("Step Into"), tr("Step Over"),
+		tr("Start debug"), tr("Continue"), tr("Stop"), tr("Step Into"), tr("Step Over"),
 		tr("Step Out"), tr("Set/Unset breakpoint"), tr("Variable list"), tr("Registration"), tr("Open GTKWave"), tr("Open SimulAVR config"), tr("Start simulator"), tr("Stop simulator") 
 	};	
 	static final int DEBUG     = 0;
@@ -27,9 +27,9 @@ public class DebugToolbar extends JPanel {
 	static final int VAR_LIST  = 7;
 	static final int REGISTR  = 8;
 	static final int GTKWAVE  = 9;
-	static final int SIMULAVR  = 9;
-	static final int STARTSIMUL  = 10;
-	static final int STOPSIMUL  = 11;
+	static final int SIMULAVR  = 10;
+	static final int STARTSIMUL  = 11;
+	static final int STOPSIMUL  = 12;
 	private JButton debugButton;
 	private JButton continueButton;
 	private JButton stopButton;
@@ -281,6 +281,7 @@ public class DebugToolbar extends JPanel {
 	public void simulatorSelectedEvent(){
 		//simulAvrConfigButton.setEnabled(true);
 		startSimulButton.setEnabled(true);
+		stopSimulButton.setEnabled(false);
 	}
 	
 	public void simulatorDeselectedEvent(){
@@ -296,6 +297,8 @@ public class DebugToolbar extends JPanel {
 		stepOverButton.setEnabled(false);
 		stepOutButton.setEnabled(false);
 		breakpointButton.setEnabled(false);
+		
+		stopSimulButton.setEnabled(true);
 	}
 	
 	public void targetIsStopped(){
