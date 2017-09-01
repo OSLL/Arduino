@@ -2,7 +2,7 @@ Arduino (IDE for AVR Virtual Lab)
 ========
 Сборка проекта
 ------------
-[Страница Wiki проекта Arduino](https://github.com/arduino/Arduino/wiki/Building-Arduino)
+[Building-Arduino wiki](https://github.com/arduino/Arduino/wiki/Building-Arduino)
 
 Требования к установленным приложениям для отладки
 ------------
