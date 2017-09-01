@@ -13,5 +13,5 @@ Arduino (IDE for AVR Virtual Lab)
     apt-get install gdb-avr gtkwave
 ```
 
-Полезные ссылки:
+# Полезные ссылки:
 [Wiki проекта Arduino](https://github.com/arduino/Arduino/wiki/_pages)
